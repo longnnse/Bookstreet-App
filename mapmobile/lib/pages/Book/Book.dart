@@ -130,8 +130,13 @@ class _BookState extends State<Book> {
                       children: [
                         Consumer<MapModel>(builder: (context, value, child) {
                           var model = context.read<MapModel>();
-                          List<dynamic> locations =
-                              model.locations as List<dynamic>;
+
+                          if (model.locations == null ||
+                              model.locations.isEmpty) {
+                            return const Text("Không có dữ liệu vị trí");
+                          }
+                          List<dynamic> locations = model.locations;
+
                           return DropdownButton(
                             value: sid,
                             items: [

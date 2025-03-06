@@ -37,11 +37,14 @@ class _EventState extends State<Event> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: Column(
-        children: [
-          Container(margin: const EdgeInsets.only(bottom: 40), child: Header()),
-          Eventlist(eventList: eventList)
-        ],
+          child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+                margin: const EdgeInsets.only(bottom: 40), child: Header()),
+            Eventlist(eventList: eventList)
+          ],
+        ),
       )),
     );
   }

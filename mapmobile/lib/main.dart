@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mapmobile/models/kios_model.dart';
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/routers/route.dart';
@@ -19,14 +20,20 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: router,
-      theme: ThemeData(
-          scaffoldBackgroundColor: const Color.fromARGB(255, 243, 243, 243),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color.fromARGB(255, 243, 243, 243),
-          ),
-          fontFamily: 'Roboto'),
-    );
+    return ScreenUtilInit(
+        designSize: const Size(1080, 1920),
+        minTextAdapt: true,
+        builder: (context, child) {
+          return MaterialApp.router(
+            routerConfig: router,
+            theme: ThemeData(
+                scaffoldBackgroundColor:
+                    const Color.fromARGB(255, 243, 243, 243),
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Color.fromARGB(255, 243, 243, 243),
+                ),
+                fontFamily: 'Roboto'),
+          );
+        });
   }
 }

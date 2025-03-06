@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mapmobile/shared/Btn.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/eventservice.dart';
 import 'package:mapmobile/shared/networkimagefallback.dart';
@@ -105,7 +107,12 @@ class _EventDetailState extends State<EventDetail> {
                       )
                     ],
                   ),
-                  DynamicText(text: event['description'] ?? '')
+                  DynamicText(text: event['description'] ?? ''),
+                  Btn(
+                      content: "Xem vị trí event",
+                      onTap: () {
+                        context.push("/map/${event["storeId"]}");
+                      })
                 ],
               ),
             )
