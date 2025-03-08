@@ -5,8 +5,9 @@ import 'package:mapmobile/services/locationservice.dart';
 import 'package:mapmobile/services/storeservice.dart';
 
 class MapWidget extends StatefulWidget {
-  const MapWidget({super.key, this.storeId});
+  const MapWidget({super.key, this.storeId, this.locationId});
   final String? storeId;
+  final int? locationId;
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -14,55 +15,70 @@ class MapWidget extends StatefulWidget {
 
 class _MapWidgetState extends State<MapWidget> {
   Map<String, dynamic> store = {};
-  Map<String, dynamic> location = {"xLocation": 0, "yLocation": 0};
 
   String? locationName;
-  double? xLocation;
-  double? yLocation;
   String? imageUrl;
 
   @override
   void initState() {
     super.initState();
 
-    _fetchStoreAndLocation();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (widget.storeId != null) {
+        await _fetchStore();
+      }
+      await _fetchLocation();
+      setState(() {});
+    });
   }
 
-  Future<void> _fetchStoreAndLocation() async {
+  Future<void> _fetchStore() async {
     try {
       final res = await getStoreById(widget.storeId);
-      final locres = await getLocById(res['locationId']);
-      setState(() {
-        location = locres;
-        store = res;
-        locationName = locres['locationName'];
-        xLocation = locres['xLocation'];
-        yLocation = locres['yLocation'];
-        imageUrl = locres['locationImage'];
-      });
+      store = res;
     } catch (error) {
-      print("Error fetching store or location: $error");
+      debugPrint("Error fetching store: $error");
+    }
+  }
+
+  Future<void> _fetchLocation() async {
+    try {
+      int? locationId;
+
+      if (widget.locationId != null) {
+        locationId = widget.locationId;
+      }
+
+      if (widget.storeId != null) {
+        locationId = store['locationId'];
+      }
+
+      if (locationId == null) {
+        return;
+      }
+
+      final locres = await getLocById(locationId);
+      locationName = locres['locationName'];
+      imageUrl = locres['locationImage'];
+    } catch (error) {
+      debugPrint("Error fetching location: $error");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Vị trí: $locationName")),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MapWithPositionWidget(
-                  mapImageUrl: imageUrl ?? "",
-                  locationName: locationName ?? "",
-                  storeName: store['storeName'] ?? "",
-                  openingHours: store['openingHours'] ?? "",
-                  closingHours: store['closingHours'] ?? "",
-                  storeImageUrl: store['urlImage'] ?? ""),
-            ],
-          ),
-        ));
+      appBar: AppBar(title: Text("Vị trí: ${locationName ?? ''}")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: imageUrl == null
+            ? const Center(child: CircularProgressIndicator())
+            : MapWithPositionWidget(
+                mapImageUrl: imageUrl ?? "",
+                locationName: locationName ?? "",
+                store: store,
+              ),
+      ),
+    );
   }
 }

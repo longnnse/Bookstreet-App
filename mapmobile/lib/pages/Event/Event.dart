@@ -14,9 +14,9 @@ class _EventState extends State<Event> {
   List<dynamic> eventList = [];
 
   Future<void> onTextChange(String text) async {
-    print("text change api... $text");
+    debugPrint("text change api... $text");
     getEvent(search: text).then((res) {
-      print("get event ${res.data['data']['list']}");
+      debugPrint("get event ${res.data['data']['list']}");
       setState(() {
         eventList = res.data['data']['list'];
       });
@@ -38,12 +38,16 @@ class _EventState extends State<Event> {
     return Scaffold(
       body: SafeArea(
           child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-                margin: const EdgeInsets.only(bottom: 40), child: Header()),
-            Eventlist(eventList: eventList)
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                  margin: const EdgeInsets.only(bottom: 40), child: Header()),
+              Eventlist(eventList: eventList)
+            ],
+          ),
         ),
       )),
     );

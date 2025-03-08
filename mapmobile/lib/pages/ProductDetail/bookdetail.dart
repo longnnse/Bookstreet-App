@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mapmobile/services/storeservice.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/productservice.dart';
 import 'package:mapmobile/shared/Btn.dart';
@@ -67,15 +68,15 @@ class _BookDetailState extends State<BookDetail> {
                                     fallbackWidget: const Icon(Icons.error)),
                               ),
                               Btn(
-                                  content: product["storeName"] != null
-                                      ? "Xem vị trí cửa hàng"
-                                      : "Chưa mở bán",
-                                  onTap: () {
-                                    if (product["storeId"] != null) {
-                                      context
-                                          .push("/map/${product["storeId"]}");
-                                    }
-                                  })
+                                content: product["storeName"] != null
+                                    ? "Xem vị trí cửa hàng"
+                                    : "Chưa mở bán",
+                                onTap: () {
+                                  if (product["storeId"] != null) {
+                                    context.push("/map/withStore/${product["storeId"]}");
+                                  }
+                                },
+                              )
                             ],
                           ),
                         ),

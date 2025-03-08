@@ -26,20 +26,14 @@ import 'package:http/http.dart' as http;
 class MapWithPositionWidget extends StatefulWidget {
   final String mapImageUrl;
   final String locationName;
-  final String storeName;
-  final String openingHours;
-  final String closingHours;
-  final String storeImageUrl;
+  final Map<String, dynamic> store;
 
   // Constructor để khởi tạo các thuộc tính
   const MapWithPositionWidget(
       {super.key,
       required this.mapImageUrl,
       required this.locationName,
-      required this.storeName,
-      required this.openingHours,
-      required this.closingHours,
-      required this.storeImageUrl});
+      required this.store});
 
   @override
   MapWithPositionWidgetState createState() => MapWithPositionWidgetState();
@@ -57,7 +51,9 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   void initState() {
     super.initState();
     // Gọi hàm _processImage sau khi khung hình đã được vẽ
-   _processImage();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _processImage();
+    });
   }
 
   // Hàm xử lý hình ảnh
@@ -94,6 +90,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
     }
     return null;
   }
+
   // Hàm nhận diện văn bản trong hình ảnh
   Future<void> _detectText(File imageFile) async {
     final textRecognizer = TextRecognizer(
@@ -155,7 +152,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                 SizedBox(
                   width: 100,
                   child: NetworkImageWithFallback(
-                    imageUrl: widget.storeImageUrl,
+                    imageUrl: widget.store['urlImage'],
                     fallbackWidget: const Icon(Icons.error),
                   ),
                 ),
@@ -166,13 +163,13 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       DynamicText(
-                        text: widget.storeName,
+                        text: widget.store['storeName'],
                         textStyle: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       _buildInfoRow(
                           Icons.location_on, Colors.red, widget.locationName),
                       _buildInfoRow(Icons.schedule, Colors.green,
-                          "${widget.openingHours} - ${widget.closingHours}"),
+                          "${widget.store['openingHours']} - ${widget.store['closingHours']}"),
                     ],
                   ),
                 ),
@@ -204,7 +201,8 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   Widget build(BuildContext context) {
     return _imageFile == null // Nếu chưa có hình ảnh
         ? const Center(
-            child: CircularProgressIndicator()) // Hiển thị vòng tròn tải
+            child: CircularProgressIndicator(),
+          )
         : Column(
             children: [
               LayoutBuilder(
@@ -223,7 +221,9 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                           top: _scaledTop(),
                           child: GestureDetector(
                             onTap: () {
-                              _showInfoWidget(context);
+                              if (widget.store['storeName'] != null) {
+                                _showInfoWidget(context);
+                              }
                             },
                             child: const Icon(Icons.location_on,
                                 color: Colors.red),
@@ -267,12 +267,17 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
     );
   }
 
+  final String storeNote =
+      "Vị trí cửa hàng sách có sách, click vào icon trên bản đồ để xem thêm thông tin";
+
+  final String eventNote = "Vị trí sự kiện";
+
   List<Widget> _buildLocationRows() {
     return [
       _buildLocationRow(Icons.location_on, Colors.red,
-          "Vị trí cửa hàng sách có sách, click vào icon trên bản đồ để xem thêm thông tin"),
+          widget.store['storeName'] != null ? storeNote : eventNote),
       const SizedBox(height: 10),
-      _buildLocationRow(Icons.location_on, Colors.green, "Vị trí của bạn"),
+      _buildLocationRow(Icons.location_on, Colors.green, "You are here"),
     ];
   }
 

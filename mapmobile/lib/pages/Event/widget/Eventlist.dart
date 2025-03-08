@@ -34,22 +34,20 @@ class _EventlistState extends State<Eventlist> {
     return SizedBox(
       height: deviceHeight - 100,
       child: SingleChildScrollView(
-        child: Container(
-          child: Consumer<MapModel>(
-            builder: (context, value, child) {
-              final model = context.read<MapModel>();
-              return Wrap(
-                spacing: 40,
-                runSpacing: 10,
-                children: [
-                  ...events.map((event) {
-                    return SizedBox(
-                        width: itemwidth, child: Eventwidget(event: event));
-                  })
-                ],
-              );
-            },
-          ),
+        child: Consumer<MapModel>(
+          builder: (context, value, child) {
+            final model = context.read<MapModel>();
+            return Wrap(
+              spacing: 40,
+              runSpacing: 10,
+              children: [
+                ...events.map((event) {
+                  return SizedBox(
+                      width: itemwidth, child: Eventwidget(event: event));
+                })
+              ],
+            );
+          },
         ),
       ),
     );

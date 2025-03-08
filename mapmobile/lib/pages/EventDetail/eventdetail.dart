@@ -30,14 +30,14 @@ class _EventDetailState extends State<EventDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-          child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Header(),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 80, vertical: 40),
-              child: Column(
+        body: SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Header(),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
@@ -111,14 +111,14 @@ class _EventDetailState extends State<EventDetail> {
                   Btn(
                       content: "Xem vị trí event",
                       onTap: () {
-                        context.push("/map/${event["storeId"]}");
+                        context.push("/map/withLocation/${event["locationId"]}");
                       })
                 ],
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
-      )),
-    );
+      ),
+    ));
   }
 }

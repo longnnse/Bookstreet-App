@@ -44,9 +44,16 @@ final router = GoRouter(
           EventDetail(eventId: state.pathParameters['id']),
     ),
     GoRoute(
-      path: '/map/:id',
-      builder: (context, state) =>
-          MapWidget(storeId: state.pathParameters['id']),
+      path: '/map/withStore/:storeId',
+      builder: (context, state) => MapWidget(
+        storeId: state.pathParameters['storeId'],
+      ),
+    ),
+    GoRoute(
+      path: '/map/withLocation/:locationId',
+      builder: (context, state) => MapWidget(
+        locationId: int.tryParse(state.pathParameters['locationId'] ?? ""),
+      ),
     ),
     GoRoute(
       path: '/pointOverall/:phone',

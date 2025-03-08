@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapmobile/shared/box.dart';
-import 'package:mapmobile/shared/text.dart';
 
 List<Map<String, dynamic>> myList = [
   {
@@ -16,8 +15,8 @@ List<Map<String, dynamic>> myList = [
     'Icon': Icons.savings,
     'Content': 'Điểm tích lũy',
     'link': '/points',
-    'Color1': Color.fromARGB(255, 255, 153, 153),
-    'Color2': Color.fromARGB(255, 171, 0, 0),
+    'Color1': const Color.fromARGB(255, 255, 153, 153),
+    'Color2': const Color.fromARGB(255, 171, 0, 0),
   },
   {
     'Icon': Icons.redeem,
@@ -35,6 +34,13 @@ List<Map<String, dynamic>> myList = [
   },
 ];
 
+// Define constants for repeated styles
+const EdgeInsets containerMargin = EdgeInsets.symmetric(horizontal: 10);
+const EdgeInsets containerPadding =
+    EdgeInsets.only(left: 20, top: 20, bottom: 50);
+const EdgeInsets textContainerMargin = EdgeInsets.only(top: 40);
+const EdgeInsets textContainerPadding = EdgeInsets.only(right: 50);
+
 class GradientWid extends StatelessWidget {
   const GradientWid({super.key});
 
@@ -47,74 +53,75 @@ class GradientWid extends StatelessWidget {
           flex: 1,
           child: Stack(
             children: [
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                padding: const EdgeInsets.only(left: 20, top: 20, bottom: 50),
-                decoration: BoxDecoration(
+              GestureDetector(
+                onTap: () {
+                  context.push(item['link']);
+                },
+                child: Container(
+                  margin: containerMargin,
+                  padding: containerPadding,
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: item['Color2']),
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GBoxWid(
-                      Icon(
-                        item['Icon'],
-                        color: item['Color1'],
-                        size: 50,
+                    color: item['Color2'],
+                  ),
+                  width: double.infinity,
+                  height: 1.sh / 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GBoxWid(
+                        Icon(
+                          item['Icon'],
+                          color: item['Color1'],
+                          size: 50,
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: const Alignment(0.8, 1),
+                          colors: <Color>[item['Color1'], item['Color2']],
+                          tileMode: TileMode.mirror,
+                        ),
                       ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: const Alignment(0.8, 1),
-                        colors: <Color>[
-                          item['Color1'],
-                          item['Color2']
-                        ], // Gradient from https://learnui.design/tools/gradient-generator.html
-                        tileMode: TileMode.mirror,
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 40),
-                      padding: const EdgeInsets.only(right: 50),
-                      child: DynamicText(
-                        text: item['Content'],
-                        textStyle: const TextStyle(
+                      Padding(
+                        padding: textContainerPadding,
+                        child: Text(
+                          item['Content'],
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Roboto'),
+                            fontFamily: 'Roboto',
+                          ),
+                        ),
                       ),
-                    )
-                  ],
+                    ],
+                  ),
                 ),
               ),
               Positioned(
-                  bottom: -10,
-                  right: -10,
-                  child: InkWell(
-                    onTap: () {
-                      print(item['link']);
-                      context.push(item['link']);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 10),
-                          color: Colors.white,
-                          borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20))),
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: const Icon(
-                          Icons.north_east,
-                          color: Colors.white,
-                        ),
-                      ),
+                bottom: -10,
+                right: -10,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 10),
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
                     ),
-                  ))
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: const Icon(
+                      Icons.north_east,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         );
