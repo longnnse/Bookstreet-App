@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
@@ -58,7 +60,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
   // Hàm xử lý hình ảnh
   Future<void> _processImage() async {
-    final file = await _loadImageFromUrl(); // Tải hình ảnh từ tài nguyên
+    final file = await _loadImage(); // Tải hình ảnh từ tài nguyên
     if (file != null) {
       await _detectText(file); // Nhận diện văn bản trong hình ảnh
       setState(() => _imageFile = file); // Cập nhật trạng thái với hình ảnh mới
@@ -66,13 +68,29 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   }
 
   // Hàm tải hình ảnh từ tài nguyên
-  Future<File?> _loadImageFromUrl() async {
+  Future<File?> _loadImage() async {
     try {
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/map_image.png';
+      final file = File(filePath);
+
+      // Check if the file already exists in cache
+      if (await file.exists()) {
+        // Load from cache
+        img.Image? originalImage = img.decodeImage(await file.readAsBytes());
+        if (originalImage == null) return null;
+
+        setState(() {
+          originalWidth = originalImage.width.toDouble();
+          originalHeight = originalImage.height.toDouble();
+        });
+
+        return file;
+      }
+
+      // If not in cache, download and save it
       final response = await http.get(Uri.parse(widget.mapImageUrl));
       if (response.statusCode == 200) {
-        final tempDir = await getTemporaryDirectory();
-        final filePath = '${tempDir.path}/map_image.png';
-        final file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
 
         img.Image? originalImage = img.decodeImage(response.bodyBytes);
@@ -119,7 +137,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
     double displayedWidth =
         MediaQuery.of(context).size.width; // Lấy chiều rộng hiển thị
     double scaleX = displayedWidth / originalWidth; // Tính tỷ lệ chiều rộng
-    return _a1Position!.left * scaleX - 6.w; // Tính toán vị trí bên trái
+    return _a1Position!.left * scaleX - 36; // Tính toán vị trí bên trái
   }
 
   // Hàm tính toán vị trí trên đã được tỷ lệ hóa
@@ -128,7 +146,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
     double displayedHeight =
         _getImageDisplayedHeight(); // Lấy chiều cao hiển thị
     double scaleY = displayedHeight / originalHeight; // Tính tỷ lệ chiều cao
-    return _a1Position!.top * scaleY - 100.h; // Tính toán vị trí trên
+    return _a1Position!.top * scaleY - 50.h; // Tính toán vị trí trên
   }
 
   // Hàm lấy chiều cao hiển thị của hình ảnh
@@ -209,16 +227,46 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                 builder: (context, constraints) {
                   return Stack(
                     children: [
-                      Image.file(
-                        _imageFile!, // Hiển thị hình ảnh
-                        width: constraints.maxWidth,
-                        height: _getImageDisplayedHeight(),
-                        fit: BoxFit.cover,
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            _imageFile!, // Hiển thị hình ảnh
+                            width: constraints.maxWidth,
+                            height: _getImageDisplayedHeight(),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       if (_a1Position != null) // Nếu có vị trí A1
                         Positioned(
                           left: _scaledLeft(),
                           top: _scaledTop(),
+                          child: GestureDetector(
+                            onTap: () {
+                              if (widget.store['storeName'] != null) {
+                                _showInfoWidget(context);
+                              }
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: CachedNetworkImage(
+                                imageUrl: widget.store['urlImage'],
+                                width: 54,
+                                height: 50,
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (_a1Position != null)
+                        Positioned(
+                          left: _scaledLeft() + 15,
+                          top: _scaledTop() - 30,
                           child: GestureDetector(
                             onTap: () {
                               if (widget.store['storeName'] != null) {
