@@ -14,6 +14,7 @@ import 'package:mapmobile/pages/ProductDetail/productdetail.dart';
 import 'package:mapmobile/pages/ProductDetail/souvernirdetail.dart';
 import 'package:mapmobile/pages/Souvenir/Souvenir.dart';
 import 'package:mapmobile/pages/Welcome/Welcome.dart';
+import 'package:mapmobile/pages/book_store_detail/book_store_detail_page.dart';
 
 // GoRouter configuration
 final router = GoRouter(
@@ -43,18 +44,7 @@ final router = GoRouter(
       builder: (context, state) =>
           EventDetail(eventId: state.pathParameters['id']),
     ),
-    GoRoute(
-      path: '/map/withStore/:storeId',
-      builder: (context, state) => MapWidget(
-        storeId: state.pathParameters['storeId'],
-      ),
-    ),
-    GoRoute(
-      path: '/map/withLocation/:locationId',
-      builder: (context, state) => MapWidget(
-        locationId: int.tryParse(state.pathParameters['locationId'] ?? ""),
-      ),
-    ),
+   
     GoRoute(
       path: '/pointOverall/:phone',
       builder: (context, state) =>

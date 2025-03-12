@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
 import 'package:mapmobile/services/storeservice.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/productservice.dart';
@@ -73,8 +74,15 @@ class _BookDetailState extends State<BookDetail> {
                                     : "Chưa mở bán",
                                 onTap: () {
                                   if (product["storeId"] != null) {
-                                    context.push(
-                                        "/map/withStore/${product["storeId"]}");
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MapWithPositionWidget(
+                                          storeId: product["storeId"].toString(),
+                                          isShowAll: false,
+                                        ),
+                                      ),
+                                    );
                                   }
                                 },
                               )

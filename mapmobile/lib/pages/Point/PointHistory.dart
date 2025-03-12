@@ -100,14 +100,15 @@ class _PointHistoryState extends State<PointHistory> {
                                 ],
                               ),
                             ),
-                            Flexible(
-                              flex: 1,
-                              child: DynamicText(
-                                text: formatDateTime(
-                                  h['createdAt'],
+                            if (h["createdAt"] != null)
+                              Flexible(
+                                flex: 1,
+                                child: DynamicText(
+                                  text: formatDateTime(
+                                    h['createdAt'],
+                                  ),
                                 ),
                               ),
-                            ),
                           ])),
                   Center(
                     child: ElevatedButton(

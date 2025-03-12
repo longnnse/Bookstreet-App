@@ -3,12 +3,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
+import 'package:mapmobile/models/map_model.dart';
+import 'package:mapmobile/pages/book_store_detail/book_store_detail_page.dart';
+import 'package:mapmobile/services/locationservice.dart';
+import 'package:mapmobile/services/storeservice.dart';
 import 'package:mapmobile/shared/networkimagefallback.dart';
 import 'package:mapmobile/shared/text.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 /* 
   Ý tưởng: Lớp MapWidget là một StatefulWidget trong Flutter, 
@@ -26,16 +32,15 @@ import 'package:http/http.dart' as http;
 
 // Lớp MapWidget là một StatefulWidget, chứa các thông tin về hình ảnh và tên cửa hàng
 class MapWithPositionWidget extends StatefulWidget {
-  final String mapImageUrl;
-  final String locationName;
-  final Map<String, dynamic> store;
+  final String? storeId;
+  final bool isShowAll;
 
   // Constructor để khởi tạo các thuộc tính
-  const MapWithPositionWidget(
-      {super.key,
-      required this.mapImageUrl,
-      required this.locationName,
-      required this.store});
+  const MapWithPositionWidget({
+    super.key,
+    this.storeId,
+    required this.isShowAll,
+  });
 
   @override
   MapWithPositionWidgetState createState() => MapWithPositionWidgetState();
@@ -43,33 +48,57 @@ class MapWithPositionWidget extends StatefulWidget {
 
 // Trạng thái của MapWithPositionWidget
 class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
-  // Biến để lưu trữ hình ảnh và vị trí của A1
+  final List<_BookStoreWithPosition> _bookStoresWithPosition = [];
+
+  double originalWidth = 1;
+  double originalHeight = 1;
+
+  // Define _imageFile to store the loaded image
   File? _imageFile;
-  Rect? _a1Position;
-  double originalWidth = 1; // Chiều rộng gốc của hình ảnh
-  double originalHeight = 1; // Chiều cao gốc của hình ảnh
 
   @override
   void initState() {
     super.initState();
-    // Gọi hàm _processImage sau khi khung hình đã được vẽ
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!widget.isShowAll && widget.storeId != null) {
+        final store = await _fetchStore(widget.storeId!);
+
+        if (store != null) {
+          _bookStoresWithPosition.add(_BookStoreWithPosition(
+            store: store,
+          ));
+        }
+      }
+
       await _processImage();
     });
   }
 
+  Future<Map<String, dynamic>?> _fetchStore(String storeId) async {
+    try {
+      final res = await getStoreById(storeId);
+      return res;
+    } catch (error) {
+      debugPrint("Error fetching store: $error");
+    }
+    return null;
+  }
+
   // Hàm xử lý hình ảnh
   Future<void> _processImage() async {
-    final file = await _loadImage(); // Tải hình ảnh từ tài nguyên
+    final file = await _loadImage();
     if (file != null) {
-      await _detectText(file); // Nhận diện văn bản trong hình ảnh
-      setState(() => _imageFile = file); // Cập nhật trạng thái với hình ảnh mới
+      await _detectText(file);
+      setState(
+          () => _imageFile = file); // Update _imageFile with the loaded image
     }
   }
 
   // Hàm tải hình ảnh từ tài nguyên
   Future<File?> _loadImage() async {
     try {
+      final image = context.read<MapModel>().imageUrl;
+
       final tempDir = await getTemporaryDirectory();
       final filePath = '${tempDir.path}/map_image.png';
       final file = File(filePath);
@@ -89,7 +118,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
       }
 
       // If not in cache, download and save it
-      final response = await http.get(Uri.parse(widget.mapImageUrl));
+      final response = await http.get(Uri.parse(image));
       if (response.statusCode == 200) {
         await file.writeAsBytes(response.bodyBytes);
 
@@ -111,42 +140,59 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
   // Hàm nhận diện văn bản trong hình ảnh
   Future<void> _detectText(File imageFile) async {
-    final textRecognizer = TextRecognizer(
-        script: TextRecognitionScript.latin); // Khởi tạo bộ nhận diện văn bản
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    final model = context.read<MapModel>();
+
     final recognizedText = await textRecognizer.processImage(
-      InputImage.fromFile(imageFile), // Xử lý hình ảnh
+      InputImage.fromFile(imageFile),
     );
 
-    // Duyệt qua các khối văn bản và dòng
+    // Clear previous locations
+    _bookStoresWithPosition.clear();
+
+    // Iterate over text blocks and lines
+    final locationsToCheck = widget.isShowAll
+        ? model.locations
+        : [
+            {'locationName': _bookStoresWithPosition[0].store['locationName']}
+          ];
+
+    final locationNames =
+        locationsToCheck.map((location) => location['locationName']).toSet();
+    final locationMap = {
+      for (var location in locationsToCheck) location['locationName']: location
+    };
+
     for (final block in recognizedText.blocks) {
       for (final line in block.lines) {
-        if (line.text.contains(widget.locationName)) {
-          // Kiểm tra xem tên cửa hàng có trong dòng không
-          _a1Position = line.boundingBox; // Lưu vị trí của A1
-          break;
+        final matchingLocationName = locationNames.firstWhere(
+          (name) => line.text.contains(name),
+          orElse: () => null,
+        );
+        if (matchingLocationName != null) {
+          _bookStoresWithPosition.add(_BookStoreWithPosition(
+            store: locationMap[matchingLocationName],
+            position: line.boundingBox,
+          ));
         }
       }
     }
-    setState(() {}); // Cập nhật trạng thái
-    textRecognizer.close(); // Đóng bộ nhận diện văn bản
+    setState(() {}); // Update the state
+    textRecognizer.close();
   }
 
   // Hàm tính toán vị trí bên trái đã được tỷ lệ hóa
-  double _scaledLeft() {
-    if (_a1Position == null) return 0; // Nếu không có vị trí, trả về 0
-    double displayedWidth =
-        MediaQuery.of(context).size.width; // Lấy chiều rộng hiển thị
-    double scaleX = displayedWidth / originalWidth; // Tính tỷ lệ chiều rộng
-    return _a1Position!.left * scaleX - 36; // Tính toán vị trí bên trái
+  double _scaledLeft(Rect location) {
+    double displayedWidth = MediaQuery.of(context).size.width;
+    double scaleX = displayedWidth / originalWidth;
+    return location.left * scaleX - 36;
   }
 
   // Hàm tính toán vị trí trên đã được tỷ lệ hóa
-  double _scaledTop() {
-    if (_a1Position == null) return 0; // Nếu không có vị trí, trả về 0
-    double displayedHeight =
-        _getImageDisplayedHeight(); // Lấy chiều cao hiển thị
-    double scaleY = displayedHeight / originalHeight; // Tính tỷ lệ chiều cao
-    return _a1Position!.top * scaleY - 50.h; // Tính toán vị trí trên
+  double _scaledTop(Rect location) {
+    double displayedHeight = _getImageDisplayedHeight();
+    double scaleY = displayedHeight / originalHeight;
+    return location.top * scaleY - 50.h;
   }
 
   // Hàm lấy chiều cao hiển thị của hình ảnh
@@ -157,150 +203,131 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
         originalWidth; // Tính chiều cao hiển thị
   }
 
-  // Hàm hiển thị widget thông tin
-  void _showInfoWidget(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          content: SizedBox(
-            height: 200,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 100,
-                  child: NetworkImageWithFallback(
-                    imageUrl: widget.store['urlImage'],
-                    fallbackWidget: const Icon(Icons.error),
-                  ),
-                ),
-                const SizedBox(
-                    width: 10), // Added spacing between image and text
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      DynamicText(
-                        text: widget.store['storeName'],
-                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      _buildInfoRow(
-                          Icons.location_on, Colors.red, widget.locationName),
-                      _buildInfoRow(Icons.schedule, Colors.green,
-                          "${widget.store['openingHours']} - ${widget.store['closingHours']}"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, Color color, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: color),
-        const SizedBox(width: 5), // Added spacing between icon and text
-        DynamicText(text: text),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return _imageFile == null // Nếu chưa có hình ảnh
-        ? const Center(
-            child: CircularProgressIndicator(),
-          )
-        : Column(
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            _imageFile!, // Hiển thị hình ảnh
-                            width: constraints.maxWidth,
-                            height: _getImageDisplayedHeight(),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      if (_a1Position != null) // Nếu có vị trí A1
-                        Positioned(
-                          left: _scaledLeft(),
-                          top: _scaledTop(),
-                          child: GestureDetector(
-                            onTap: () {
-                              if (widget.store['storeName'] != null) {
-                                _showInfoWidget(context);
-                              }
-                            },
+    return Scaffold(
+      appBar: AppBar(),
+      body: _imageFile == null
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: CachedNetworkImage(
-                                imageUrl: widget.store['urlImage'],
-                                width: 54,
-                                height: 50,
-                                fit: BoxFit.fill,
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.file(
+                                _imageFile!, // Hiển thị hình ảnh
+                                width: constraints.maxWidth,
+                                height: _getImageDisplayedHeight(),
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),
-                        ),
-                      if (_a1Position != null)
-                        Positioned(
-                          left: _scaledLeft() + 15,
-                          top: _scaledTop() - 30,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (widget.store['storeName'] != null) {
-                                _showInfoWidget(context);
-                              }
-                            },
-                            child: const Icon(Icons.location_on,
-                                color: Colors.red),
-                          ),
-                        ),
-                      Positioned(
-                        left: 70.w,
-                        top: 350.h,
-                        child: const Column(
-                          children: [
-                            Icon(Icons.location_on, color: Colors.green),
-                            Text(
-                              'You are here',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                          // Iterate over _kiotLocations to display each location
+                          for (int index = 0;
+                              index < _bookStoresWithPosition.length;
+                              index++)
+                            if (_bookStoresWithPosition[index].position != null)
+                              Positioned(
+                                left: _scaledLeft(
+                                    _bookStoresWithPosition[index].position!),
+                                top: _scaledTop(
+                                    _bookStoresWithPosition[index].position!),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            BookStoreDetailPage(
+                                          storeId:
+                                              _bookStoresWithPosition[index]
+                                                  .store['storeId'],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl: _bookStoresWithPosition[index]
+                                          .store['storeImage'],
+                                      width: 54,
+                                      height: 50,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  );
-                },
+                          if (_bookStoresWithPosition.isNotEmpty)
+                            for (int index = 0;
+                                index < _bookStoresWithPosition.length;
+                                index++)
+                              if (_bookStoresWithPosition[index].position !=
+                                  null)
+                                Positioned(
+                                  left: _scaledLeft(
+                                          _bookStoresWithPosition[index]
+                                              .position!) +
+                                      15,
+                                  top: _scaledTop(_bookStoresWithPosition[index]
+                                          .position!) -
+                                      30,
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              BookStoreDetailPage(
+                                            storeId:
+                                                _bookStoresWithPosition[index]
+                                                    .store['storeId'],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Icon(Icons.location_on,
+                                        color: Colors.red),
+                                  ),
+                                ),
+                          Positioned(
+                            left: 70.w,
+                            top: 350.h,
+                            child: const Column(
+                              children: [
+                                Icon(Icons.location_on, color: Colors.green),
+                                Text(
+                                  'You are here',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  _buildNote(),
+                ],
               ),
-              const SizedBox(height: 20),
-              _buildNote(),
-            ],
-          );
+            ),
+    );
   }
 
   Widget _buildNote() {
@@ -322,8 +349,12 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
   List<Widget> _buildLocationRows() {
     return [
-      _buildLocationRow(Icons.location_on, Colors.red,
-          widget.store['storeName'] != null ? storeNote : eventNote),
+      _buildLocationRow(
+          Icons.location_on,
+          Colors.red,
+          _bookStoresWithPosition[0].store['storeName'] != null
+              ? storeNote
+              : eventNote),
       const SizedBox(height: 10),
       _buildLocationRow(Icons.location_on, Colors.green, "You are here"),
     ];
@@ -337,4 +368,11 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
       ],
     );
   }
+}
+
+class _BookStoreWithPosition {
+  final Map<String, dynamic> store;
+  final Rect? position;
+
+  _BookStoreWithPosition({required this.store, this.position});
 }
