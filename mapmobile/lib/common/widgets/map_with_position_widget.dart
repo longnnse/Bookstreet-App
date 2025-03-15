@@ -1,17 +1,13 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/book_store_detail/book_store_detail_page.dart';
-import 'package:mapmobile/services/locationservice.dart';
+import 'package:mapmobile/services/eventservice.dart';
 import 'package:mapmobile/services/storeservice.dart';
-import 'package:mapmobile/shared/networkimagefallback.dart';
-import 'package:mapmobile/shared/text.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -31,16 +27,69 @@ import 'package:provider/provider.dart';
 */
 
 // Lớp MapWidget là một StatefulWidget, chứa các thông tin về hình ảnh và tên cửa hàng
+
+enum MapType { store, event, showAll }
+
+extension MapTypeExtension on MapType {
+  String get note {
+    switch (this) {
+      case MapType.store:
+        return "Vị trí cửa hàng sách có sách, click vào icon trên bản đồ để xem thêm thông tin";
+      case MapType.event:
+        return "Vị trí sự kiện";
+      case MapType.showAll:
+        return "Vị trí cửa hàng sách, click vào icon trên bản đồ để xem thêm thông tin";
+    }
+  }
+}
+
+class LocationWithPosition<T> {
+  final T data;
+  Rect? position;
+  final MapType type;
+
+  LocationWithPosition({
+    required this.data,
+    this.position,
+    required this.type,
+  });
+
+  void setPosition(Rect position) {
+    this.position = position;
+  }
+}
+
+typedef BookStoreOrEventWithPosition
+    = LocationWithPosition<Map<String, dynamic>>;
+
+// Keeping this for backward compatibility
+class EventWithPosition {
+  final Map<String, dynamic> event;
+  Rect? position;
+
+  EventWithPosition({required this.event, this.position});
+
+  void setPosition(Rect position) {
+    this.position = position;
+  }
+}
+
 class MapWithPositionWidget extends StatefulWidget {
   final String? storeId;
-  final bool isShowAll;
+  final String? eventId;
+  final MapType mapType;
 
   // Constructor để khởi tạo các thuộc tính
   const MapWithPositionWidget({
     super.key,
     this.storeId,
-    required this.isShowAll,
-  });
+    this.eventId,
+    required this.mapType,
+  }) : assert(
+            (mapType == MapType.store && storeId != null) ||
+                (mapType == MapType.event && eventId != null) ||
+                mapType == MapType.showAll,
+            'storeId is required for MapType.store and eventId is required for MapType.event');
 
   @override
   MapWithPositionWidgetState createState() => MapWithPositionWidgetState();
@@ -48,7 +97,7 @@ class MapWithPositionWidget extends StatefulWidget {
 
 // Trạng thái của MapWithPositionWidget
 class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
-  final List<_BookStoreWithPosition> _bookStoresWithPosition = [];
+  final List<BookStoreOrEventWithPosition> _bookStoresWithPosition = [];
 
   double originalWidth = 1;
   double originalHeight = 1;
@@ -60,12 +109,24 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!widget.isShowAll && widget.storeId != null) {
+      if (widget.mapType != MapType.showAll && widget.storeId != null) {
         final store = await _fetchStore(widget.storeId!);
 
         if (store != null) {
-          _bookStoresWithPosition.add(_BookStoreWithPosition(
-            store: store,
+          _bookStoresWithPosition.add(BookStoreOrEventWithPosition(
+            data: store,
+            type: MapType.store,
+          ));
+        }
+      }
+
+      if (widget.mapType != MapType.showAll && widget.eventId != null) {
+        final event = await _fetchEvent(widget.eventId!);
+
+        if (event != null) {
+          _bookStoresWithPosition.add(BookStoreOrEventWithPosition(
+            data: event,
+            type: MapType.event,
           ));
         }
       }
@@ -80,6 +141,16 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
       return res;
     } catch (error) {
       debugPrint("Error fetching store: $error");
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> _fetchEvent(String eventId) async {
+    try {
+      final res = await getEventById(id: eventId);
+      return res;
+    } catch (error) {
+      debugPrint("Error fetching event: $error");
     }
     return null;
   }
@@ -143,42 +214,74 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     final model = context.read<MapModel>();
 
-    final recognizedText = await textRecognizer.processImage(
-      InputImage.fromFile(imageFile),
-    );
+    try {
+      // Process image once
+      final recognizedText = await textRecognizer.processImage(
+        InputImage.fromFile(imageFile),
+      );
 
-    // Clear previous locations
-    _bookStoresWithPosition.clear();
+      // Determine which locations to check based on map type
+      final locationsToCheck = widget.mapType == MapType.showAll
+          ? model.locations
+          : [
+              {'locationName': _bookStoresWithPosition[0].data['locationName']}
+            ];
 
-    // Iterate over text blocks and lines
-    final locationsToCheck = widget.isShowAll
-        ? model.locations
-        : [
-            {'locationName': _bookStoresWithPosition[0].store['locationName']}
-          ];
+      // Create a set of location names for faster lookups
+      final locationNames = locationsToCheck
+          .map<String>((location) => location['locationName'] as String)
+          .toSet();
 
-    final locationNames =
-        locationsToCheck.map((location) => location['locationName']).toSet();
-    final locationMap = {
-      for (var location in locationsToCheck) location['locationName']: location
-    };
-
-    for (final block in recognizedText.blocks) {
-      for (final line in block.lines) {
-        final matchingLocationName = locationNames.firstWhere(
-          (name) => line.text.contains(name),
-          orElse: () => null,
+      // Add all locations to _bookStoresWithPosition if showing all
+      if (widget.mapType == MapType.showAll) {
+        _bookStoresWithPosition.addAll(
+          locationsToCheck.map<BookStoreOrEventWithPosition>(
+            (location) => BookStoreOrEventWithPosition(
+              data: {
+                'locationName': location['locationName'],
+                'storeName': location['storeName'],
+                'urlImage': location['storeImage'],
+                'storeId': location['storeId'],
+              },
+              type: MapType.store,
+            ),
+          ),
         );
-        if (matchingLocationName != null) {
-          _bookStoresWithPosition.add(_BookStoreWithPosition(
-            store: locationMap[matchingLocationName],
-            position: line.boundingBox,
-          ));
+      }
+
+      // Create a lookup map for faster access to stores by location name
+      final Map<String, BookStoreOrEventWithPosition> storesByLocation = {
+        for (var store in _bookStoresWithPosition)
+          store.data['locationName']: store
+      };
+
+      // Process text blocks to find matching locations
+      for (final block in recognizedText.blocks) {
+        for (final line in block.lines) {
+          // Find matching location name in the recognized text
+          String? matchingLocationName;
+          for (final name in locationNames) {
+            if (line.text.contains(name)) {
+              matchingLocationName = name;
+              break; // Exit loop once a match is found
+            }
+          }
+
+          // Update position for matching store
+          if (matchingLocationName != null) {
+            final matchingStore = storesByLocation[matchingLocationName];
+            if (matchingStore != null) {
+              matchingStore.setPosition(line.boundingBox);
+            }
+          }
         }
       }
+
+      setState(() {}); // Update the UI
+    } finally {
+      // Ensure resources are released
+      textRecognizer.close();
     }
-    setState(() {}); // Update the state
-    textRecognizer.close();
   }
 
   // Hàm tính toán vị trí bên trái đã được tỷ lệ hóa
@@ -219,21 +322,22 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                     builder: (context, constraints) {
                       return Stack(
                         children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.file(
-                                _imageFile!, // Hiển thị hình ảnh
-                                width: constraints.maxWidth,
-                                height: _getImageDisplayedHeight(),
-                                fit: BoxFit.cover,
+                          if (_imageFile != null)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(
+                                  _imageFile!, // Hiển thị hình ảnh
+                                  width: constraints.maxWidth,
+                                  height: _getImageDisplayedHeight(),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                          ),
                           // Iterate over _kiotLocations to display each location
                           for (int index = 0;
                               index < _bookStoresWithPosition.length;
@@ -253,7 +357,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                             BookStoreDetailPage(
                                           storeId:
                                               _bookStoresWithPosition[index]
-                                                  .store['storeId'],
+                                                  .data['storeId'],
                                         ),
                                       ),
                                     );
@@ -262,7 +366,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                     borderRadius: BorderRadius.circular(8.0),
                                     child: CachedNetworkImage(
                                       imageUrl: _bookStoresWithPosition[index]
-                                          .store['storeImage'],
+                                          .data['urlImage'],
                                       width: 54,
                                       height: 50,
                                       fit: BoxFit.fill,
@@ -293,7 +397,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                               BookStoreDetailPage(
                                             storeId:
                                                 _bookStoresWithPosition[index]
-                                                    .store['storeId'],
+                                                    .data['storeId'],
                                           ),
                                         ),
                                       );
@@ -323,7 +427,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  _buildNote(),
+                  if (_bookStoresWithPosition.isNotEmpty) _buildNote(),
                 ],
               ),
             ),
@@ -349,12 +453,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
   List<Widget> _buildLocationRows() {
     return [
-      _buildLocationRow(
-          Icons.location_on,
-          Colors.red,
-          _bookStoresWithPosition[0].store['storeName'] != null
-              ? storeNote
-              : eventNote),
+      _buildLocationRow(Icons.location_on, Colors.red, widget.mapType.note),
       const SizedBox(height: 10),
       _buildLocationRow(Icons.location_on, Colors.green, "You are here"),
     ];
@@ -368,11 +467,4 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
       ],
     );
   }
-}
-
-class _BookStoreWithPosition {
-  final Map<String, dynamic> store;
-  final Rect? position;
-
-  _BookStoreWithPosition({required this.store, this.position});
 }

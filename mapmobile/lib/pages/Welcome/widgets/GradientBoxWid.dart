@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
+import 'package:mapmobile/pages/Book/book_page.dart';
+import 'package:mapmobile/pages/author/author_page.dart';
 import 'package:mapmobile/shared/box.dart';
 
 List<Map<String, dynamic>> menuItems = [
@@ -40,6 +42,13 @@ List<Map<String, dynamic>> menuItems = [
     'backgroundColor': const Color(0xFFA5D6A7), // Xanh lá cây nhạt
     'accentColor': const Color(0xFF2E7D32), // Xanh lá cây rực rỡ
   },
+  {
+    'icon': Icons.person,
+    'title': 'Tác giả',
+    'route': '/author',
+    'backgroundColor': const Color(0xFF640D5F), // Dark purple background
+    'accentColor': const Color(0xFF640D5F), // Dark purple accent
+  },
 ];
 
 class GradientMenu extends StatelessWidget {
@@ -64,9 +73,22 @@ class GradientMenu extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const MapWithPositionWidget(
-                      isShowAll: true,
-                      storeId: "0",
+                      mapType: MapType.showAll,
                     ),
+                  ),
+                );
+              } else if (item['route'] == '/books') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BookPage(),
+                  ),
+                );
+              } else if (item['route'] == '/author') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AuthorPage(),
                   ),
                 );
               } else {
@@ -90,7 +112,7 @@ class GradientMenu extends StatelessWidget {
                     GradientIconBox(
                       icon: Icon(
                         item['icon'],
-                        color: backgroundColor,
+                        color: Colors.white,
                         size: 20,
                       ),
                       gradient: LinearGradient(

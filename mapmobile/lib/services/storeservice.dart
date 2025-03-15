@@ -6,3 +6,9 @@ Future<dynamic> getStoreById(String? id) async {
   final response = await dio.get('${baseURL}Store/$id');
   return response.data;
 }
+
+Future<dynamic> getAllBookStore() async {
+  final dio = Dio();
+  final response = await dio.get('${baseURL}Store');
+  return response.data;
+}

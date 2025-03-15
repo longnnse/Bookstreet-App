@@ -79,7 +79,7 @@ class _BookDetailState extends State<BookDetail> {
                                       MaterialPageRoute(
                                         builder: (context) => MapWithPositionWidget(
                                           storeId: product["storeId"].toString(),
-                                          isShowAll: false,
+                                          mapType: MapType.store,
                                         ),
                                       ),
                                     );

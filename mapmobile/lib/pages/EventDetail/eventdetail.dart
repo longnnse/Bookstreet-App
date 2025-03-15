@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
 import 'package:mapmobile/shared/Btn.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/eventservice.dart';
@@ -111,7 +112,15 @@ class _EventDetailState extends State<EventDetail> {
                   Btn(
                       content: "Xem vị trí event",
                       onTap: () {
-                        context.push("/map/withLocation/${event["locationId"]}");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MapWithPositionWidget(
+                              mapType: MapType.event,
+                              eventId: widget.eventId,
+                            ),
+                          ),
+                        );
                       })
                 ],
               )

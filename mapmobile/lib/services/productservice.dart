@@ -7,12 +7,16 @@ Future<dynamic> getAllProduct() async {
   return response;
 }
 
-Future<dynamic> getBook(
-    {int? categoryId,
-    int? genreId,
-    String? search,
-    int? streetId,
-    int? storeId}) async {
+Future<dynamic> getBook({
+  int? categoryId,
+  int? genreId,
+  String? search,
+  int? streetId,
+  int? storeId,
+  int? distributorId,
+  double? minPrice,
+  double? maxPrice,
+}) async {
   var filterData = [
     {"field": "ProductTypeId", "value": "1", "operand": 0}
   ];
@@ -48,6 +52,21 @@ Future<dynamic> getBook(
     filterData = [
       ...filterData,
       {"field": "productName", "value": search, "operand": 6}
+    ];
+  }
+
+  if (distributorId != null && distributorId != 0) {
+    filterData = [
+      ...filterData,
+      {"field": "book.distributorid", "value": "$distributorId", "operand": 0}
+    ];
+  }
+
+  if (minPrice != null && minPrice != 0 || maxPrice != null && maxPrice != 0) {
+    filterData = [
+      ...filterData,
+      {"field": "price", "value": minPrice.toString(), "operand": 3},
+      {"field": "price", "value": maxPrice.toString(), "operand": 5}
     ];
   }
 
@@ -90,8 +109,6 @@ Future<dynamic> getSouvenir(
     ];
   }
 
-  print("FilterData :");
-  print(filterData);
   final dio = Dio();
   final response = await dio.post('${baseURL}Product/paginate',
       data: {"limit": -1, "filters": filterData});

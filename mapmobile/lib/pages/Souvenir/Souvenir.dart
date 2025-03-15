@@ -84,30 +84,32 @@ class _SouvenirState extends State<Souvenir> {
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Container(
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: Header(
-                    onTextChange: onTextChange,
-                  )),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Flexible(
-                      flex: 3,
-                      child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.only(right: 10),
-                          child: SouvenirList(souvenirs: Souvenirs))),
-                  Flexible(
-                      flex: 1,
-                      child: CategorySidebar(
-                        onCateChange: onCateChange,
-                      ))
-                ],
-              )
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    child: Header(
+                      onTextChange: onTextChange,
+                    )),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Flexible(
+                        flex: 3,
+                        child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.only(right: 10),
+                            child: SouvenirList(souvenirs: Souvenirs))),
+                    Flexible(
+                        flex: 1,
+                        child: CategorySidebar(
+                          onCateChange: onCateChange,
+                        ))
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),
