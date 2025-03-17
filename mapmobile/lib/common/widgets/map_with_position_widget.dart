@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
 import 'package:mapmobile/models/map_model.dart';
@@ -350,17 +351,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                     _bookStoresWithPosition[index].position!),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            BookStoreDetailPage(
-                                          storeId:
-                                              _bookStoresWithPosition[index]
-                                                  .data['storeId'],
-                                        ),
-                                      ),
-                                    );
+                                    navigate(index);
                                   },
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8.0),
@@ -390,17 +381,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                       30,
                                   child: GestureDetector(
                                     onTap: () async {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              BookStoreDetailPage(
-                                            storeId:
-                                                _bookStoresWithPosition[index]
-                                                    .data['storeId'],
-                                          ),
-                                        ),
-                                      );
+                                      navigate(index);
                                     },
                                     child: const Icon(Icons.location_on,
                                         color: Colors.red),
@@ -466,5 +447,20 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
         Text(text),
       ],
     );
+  }
+
+  void navigate(int index) {
+    if (widget.mapType == MapType.store) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookStoreDetailPage(
+            storeId: _bookStoresWithPosition[index].data['storeId'],
+          ),
+        ),
+      );
+    } else {
+      context.pop();
+    }
   }
 }
