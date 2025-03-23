@@ -450,7 +450,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   }
 
   void navigate(int index) {
-    if (widget.mapType == MapType.store) {
+    if (widget.mapType == MapType.store || widget.mapType == MapType.showAll) {
       Navigator.push(
         context,
         MaterialPageRoute(
