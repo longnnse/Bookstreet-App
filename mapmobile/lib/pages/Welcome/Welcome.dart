@@ -4,9 +4,14 @@ import 'package:mapmobile/pages/Welcome/widgets/GradientBoxWid.dart';
 import 'package:mapmobile/pages/Welcome/widgets/header.dart';
 import 'package:provider/provider.dart';
 
-class Welcome extends StatelessWidget {
+class Welcome extends StatefulWidget {
   const Welcome({super.key});
 
+  @override
+  State<Welcome> createState() => _WelcomeState();
+}
+
+class _WelcomeState extends State<Welcome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,13 +20,17 @@ class Welcome extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Header(),
+              Header(callback: () {
+                setState(() {});
+              }),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const GradientMenu(),
+                  GradientMenu(callback: () {
+                    setState(() {});
+                  }),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(right: 16),

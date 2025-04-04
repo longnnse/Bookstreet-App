@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
+import 'package:mapmobile/pages/Book/Book.dart';
 import 'package:mapmobile/pages/Book/book_page.dart';
+import 'package:mapmobile/pages/Event/Event.dart';
+import 'package:mapmobile/pages/Membership/membership_info_page.dart';
+import 'package:mapmobile/pages/Souvenir/Souvenir.dart';
 import 'package:mapmobile/pages/author/author_page.dart';
+import 'package:mapmobile/pages/auth/login_page.dart';
+import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/shared/box.dart';
 
 List<Map<String, dynamic>> menuItems = [
@@ -15,9 +20,9 @@ List<Map<String, dynamic>> menuItems = [
     'accentColor': const Color(0xFFFF9800), // Cam đậm
   },
   {
-    'icon': Icons.savings,
-    'title': 'Điểm tích lũy',
-    'route': '/points',
+    'icon': Icons.account_circle,
+    'title': 'Thành viên',
+    'route': '/membership/login',
     'backgroundColor': const Color(0xFF80DEEA), // Xanh nước biển sáng
     'accentColor': const Color(0xFF00BCD4), // Xanh ngọc đậm
   },
@@ -52,7 +57,8 @@ List<Map<String, dynamic>> menuItems = [
 ];
 
 class GradientMenu extends StatelessWidget {
-  const GradientMenu({super.key});
+  const GradientMenu({super.key, required this.callback});
+  final VoidCallback callback;
 
   @override
   Widget build(BuildContext context) {
@@ -67,32 +73,73 @@ class GradientMenu extends StatelessWidget {
           padding:
               const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
           child: GestureDetector(
-            onTap: () {
-              if (item['route'] == '/map') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MapWithPositionWidget(
-                      mapType: MapType.showAll,
+            onTap: () async {
+              switch (item['route']) {
+                case '/map':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MapWithPositionWidget(
+                        mapType: MapType.showAll,
+                      ),
                     ),
-                  ),
-                );
-              } else if (item['route'] == '/books') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const BookPage(),
-                  ),
-                );
-              } else if (item['route'] == '/author') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AuthorPage(),
-                  ),
-                );
-              } else {
-                context.push(item['route']);
+                  );
+                  break;
+                case '/books':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BookPage(),
+                    ),
+                  );
+                  break;
+                case '/author':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AuthorPage(),
+                    ),
+                  );
+                  break;
+                case '/membership/login':
+                  if (PreferencesManager.getUserData() != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MembershipInfoPage(),
+                      ),
+                    );
+                  } else {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                    if (result) {
+                      callback();
+                    }
+                  }
+                  break;
+                case '/souvenir':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Souvenir(),
+                    ),
+                  );
+                  break;
+                case '/event':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Event(),
+                    ),
+                  );
+                  break;
+                default:
+                  // Handle other routes as needed
+                  break;
               }
             },
             child: Container(

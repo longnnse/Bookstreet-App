@@ -1,11 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mapmobile/models/kios_model.dart';
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/routers/route.dart';
+import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await PreferencesManager.init();
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => MapModel()),

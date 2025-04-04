@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/shared/currenttime.dart';
+import 'package:mapmobile/services/auth_service.dart';
+import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/shared/text.dart';
-import 'package:mapmobile/util/util.dart';
 import 'package:provider/provider.dart';
 
 class Header extends StatelessWidget {
-  const Header({super.key});
+  const Header({super.key, required this.callback});
+  final VoidCallback callback;
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +33,29 @@ class Header extends StatelessWidget {
                         )
                       ],
                     )),
-            Row(
-              children: [
-                const Currenttime(),
-                BoldLGText(
-                  text: getCurrentDate(),
-                  color: Colors.black54,
-                )
-              ],
-            ),
+            if (PreferencesManager.getUserData() != null)
+              Column(
+                children: [
+                  Text(
+                    'Xin chào, ${PreferencesManager.getUserData()?['user']['fullName'] ?? ''}',
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () async {
+                      await AuthService().logout();
+                      callback();
+                    },
+                    child: const Text(
+                      'Đăng xuất',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  )
+                ],
+              )
           ],
         ),
       ),

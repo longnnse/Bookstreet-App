@@ -34,44 +34,84 @@ class _MapPickingState extends State<MapPicking> {
       final model = context.read<MapModel>();
       return Scaffold(
         body: SafeArea(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const DynamicText(
-              text: "Chọn đường sách bạn muốn xem",
-              textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: street.map((st) {
-                return Column(
+            child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: street.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    DynamicText(text: st['streetName']),
-                    InkWell(
-                      onTap: () {
-                        model.setStreetId(st['streetId']);
-                        model.setStreetName(st['streetName']);
-                        model.setImage(st['urlImage']);
-                        model.setLocations(st['locations']);
-                        context.push("/kiosPicking");
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: const Color.fromARGB(255, 219, 219, 219)),
-                        width: parentwidth / 2.5,
-                        child: NetworkImageWithFallback(
-                            imageUrl: st['urlImage'],
-                            fallbackWidget: const Icon(Icons.error)),
+                    const DynamicText(
+                      text: "Chọn đường sách bạn muốn xem",
+                      textStyle:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                    ),
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 3 / 2,
+                        ),
+                        itemCount: street.length,
+                        itemBuilder: (context, index) {
+                          final st = street[index];
+                          return GestureDetector(
+                            onTap: () {
+                              model.setStreetId(st['streetId']);
+                              model.setStreetName(st['streetName']);
+                              model.setImage(st['urlImage']);
+                              model.setLocations(st['locations']);
+                              context.push("/kiosPicking");
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withAlpha(100),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: NetworkImageWithFallback(
+                                          imageUrl: st['urlImage'],
+                                          fallbackWidget:
+                                              const Icon(Icons.error),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  DynamicText(
+                                    text: st['streetName'],
+                                    textStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    )
+                    ),
                   ],
-                );
-              }).toList(),
-            ),
-          ],
+                ),
         )),
       );
     });

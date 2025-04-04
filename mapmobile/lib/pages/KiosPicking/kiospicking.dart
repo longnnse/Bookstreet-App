@@ -13,73 +13,72 @@ class KiosPicking extends StatelessWidget {
     double parentwidth = MediaQuery.of(context).size.width;
     double parentheight = MediaQuery.of(context).size.height;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Chọn vị trí kios của bạn'),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const DynamicText(
-                text: "Chọn vị trí kios của bạn",
-                textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              Consumer<MapModel>(
-                builder: (context, value, child) {
-                  final model = context.read<MapModel>();
-                  return Row(
-                    children: [
-                      Flexible(flex: 1, child: Container()),
-                      Flexible(
-                          flex: 2,
+        child: Consumer<MapModel>(
+          builder: (context, value, child) {
+            final model = context.read<MapModel>();
+            if (model.locations.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return ListView.builder(
+              itemCount: model.locations.length,
+              itemBuilder: (context, index) {
+                dynamic loc = model.locations[index];
+                if (loc['kiosName'] != null) {
+                  return Consumer<KiosModel>(
+                    builder: (context, value, child) {
+                      final kiosmodel = context.read<KiosModel>();
+                      return InkWell(
+                        onTap: () {
+                          kiosmodel
+                              .setKiosId(loc['kiosId'])
+                              .setkiosName(loc['kiosName'])
+                              .setxLocation(loc['xLocation'])
+                              .setyLocation(loc['yLocation']);
+                          context.go("/Welcome");
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            height: parentheight - 100,
-                            child: ListView.builder(
-                              itemCount: model.locations.length,
-                              itemBuilder: (context, index) {
-                                dynamic loc = model.locations[index];
-                                if (loc['kiosName'] != null) {
-                                  return Consumer<KiosModel>(
-                                      builder: (context, value, child) {
-                                    final kiosmodel = context.read<KiosModel>();
-                                    return InkWell(
-                                      onTap: () {
-                                        kiosmodel
-                                            .setKiosId(loc['kiosId'])
-                                            .setkiosName(loc['kiosName'])
-                                            .setxLocation(loc['xLocation'])
-                                            .setyLocation(loc['yLocation']);
-                                        context.go("/Welcome");
-                                      },
-                                      child: Container(
-                                        width: parentwidth / 2,
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            color: const Color.fromARGB(
-                                                255, 212, 229, 255)),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 5),
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 10),
-                                        child: DynamicText(
-                                          text:
-                                              "${loc['kiosName']} tại ${loc['areaName']}",
-                                        ),
-                                      ),
-                                    );
-                                  });
-                                } else
-                                  return Container();
-                              },
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.lightBlueAccent.withAlpha(100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withAlpha(100),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
-                          )),
-                      Flexible(flex: 1, child: Container())
-                    ],
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            child: DynamicText(
+                              text: "${loc['kiosName']} tại ${loc['areaName']}",
+                              textStyle: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   );
-                },
-              )
-            ],
-          ),
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
+            );
+          },
         ),
       ),
     );
