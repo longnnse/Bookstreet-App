@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mapmobile/models/map_model.dart';
+import 'package:mapmobile/pages/author/author_detail.dart';
 import 'package:mapmobile/services/author_service.dart';
 import 'package:provider/provider.dart';
 
@@ -70,13 +71,13 @@ class _AuthorPageState extends State<AuthorPage> {
                       final author = authors[index];
                       return GestureDetector(
                         onTap: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => AuthorDetail(
-                          //         pid: author['authorId'].toString()),
-                          //   ),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AuthorDetail(
+                                  authorId: author['authorId'].toString()),
+                            ),
+                          );
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

@@ -44,7 +44,7 @@ bool isImageUrl(String url) {
   return urlPattern.hasMatch(url);
 }
 
-String formatToVND(double amount) {
+String formatToVND(num amount) {
   final NumberFormat currencyFormat = NumberFormat.currency(
     locale: 'vi_VN',
     symbol: '₫', // Vietnamese Dong symbol
