@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/productservice.dart';
 import 'package:mapmobile/shared/Btn.dart';
@@ -72,8 +73,17 @@ class _SouvernirDetailState extends State<SouvernirDetail> {
                                       : "Chưa mở bán",
                                   onTap: () {
                                     if (product["storeId"] != null) {
-                                      context
-                                          .push("/map/${product["storeId"]}");
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              MapWithPositionWidget(
+                                            mapType: MapType.store,
+                                            storeId:
+                                                product["storeId"].toString(),
+                                          ),
+                                        ),
+                                      );
                                     }
                                   })
                             ],

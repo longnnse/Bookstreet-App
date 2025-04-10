@@ -14,7 +14,6 @@ class CustomerService {
       'page': 0,
       'limit': -1,
     });
-    print('API Response: ${response.data['data']['list'].runtimeType}');
     return response.data['data']['list'];
   }
 }

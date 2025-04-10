@@ -155,7 +155,7 @@ class _MembershipInfoPageState extends State<MembershipInfoPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const TransactionHistoryPage(
-                          type: TransactionType.wallet,
+                          type: TransactionHistoryType.wallet,
                         ),
                       ),
                     ),
@@ -227,7 +227,7 @@ class _MembershipInfoPageState extends State<MembershipInfoPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const TransactionHistoryPage(
-                        type: TransactionType.points,
+                        type: TransactionHistoryType.points,
                       ),
                     ),
                   );
