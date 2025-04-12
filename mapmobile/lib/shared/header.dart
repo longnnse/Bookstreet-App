@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mapmobile/shared/currenttime.dart';
+import 'package:mapmobile/shared/current_time.dart';
 import 'package:mapmobile/shared/iconbtn.dart';
 import 'package:mapmobile/shared/text.dart';
 

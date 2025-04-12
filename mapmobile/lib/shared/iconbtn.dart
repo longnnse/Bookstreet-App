@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class IconBtn extends StatelessWidget {
-  IconBtn(
+  const IconBtn(
       {super.key,
       required this.icon,
       this.bgColor = const Color.fromARGB(255, 198, 13, 0),

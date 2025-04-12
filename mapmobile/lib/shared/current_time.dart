@@ -21,16 +21,14 @@ class Currenttime extends StatelessWidget {
 
     // Format minute to always be two digits
     String minuteStr = minute < 10 ? '0$minute' : '$minute';
-    return Container(
-      child: Row(
-        children: [
-          BoldLGText(text: '$hour:$minuteStr'),
-          Icon(
-            icon,
-            size: 30,
-          )
-        ],
-      ),
+    return Row(
+      children: [
+        BoldLGText(text: '$hour:$minuteStr'),
+        Icon(
+          icon,
+          size: 30,
+        )
+      ],
     );
   }
 }

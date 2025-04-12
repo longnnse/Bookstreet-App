@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/pages/Event/widget/Eventwidget.dart';
+import 'package:mapmobile/pages/Event/widget/event_widget.dart';
 import 'package:mapmobile/services/eventservice.dart';
 import 'package:mapmobile/util/util.dart';
 import 'package:provider/provider.dart';

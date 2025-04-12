@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/pages/Welcome/widgets/GradientBoxWid.dart';
 import 'package:mapmobile/pages/Welcome/widgets/header.dart';
+import 'package:mapmobile/pages/welcome/widgets/gradient_box_widget.dart';
 import 'package:provider/provider.dart';
 
 class Welcome extends StatefulWidget {

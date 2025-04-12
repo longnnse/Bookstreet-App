@@ -17,7 +17,6 @@ class _CategorySidebarState extends State<CategorySidebar> {
   void initState() {
     super.initState();
     getAllCate("2").then((res) {
-      print(res.data);
       setState(() {
         categories = res.data['data']['list'];
       });

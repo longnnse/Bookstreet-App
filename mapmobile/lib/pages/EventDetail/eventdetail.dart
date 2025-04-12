@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
-import 'package:mapmobile/shared/Btn.dart';
+import 'package:mapmobile/shared/btn.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/eventservice.dart';
 import 'package:mapmobile/shared/networkimagefallback.dart';
@@ -47,7 +46,7 @@ class _EventDetailState extends State<EventDetail> {
                         BoxDecoration(borderRadius: BorderRadius.circular(20)),
                     child: NetworkImageWithFallback(
                         imageUrl: event['urlImage'] ?? '',
-                        fallbackWidget: Icon(Icons.error)),
+                        fallbackWidget: const Icon(Icons.error)),
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(vertical: 20),
@@ -63,7 +62,7 @@ class _EventDetailState extends State<EventDetail> {
                         ),
                         const Text(
                           " - ",
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Color.fromARGB(255, 224, 15, 0),
                               fontSize: 20),
                         ),
@@ -97,8 +96,8 @@ class _EventDetailState extends State<EventDetail> {
                   Row(
                     children: [
                       Container(
-                          margin: EdgeInsets.only(right: 10),
-                          child: Icon(Icons.people)),
+                          margin: const EdgeInsets.only(right: 10),
+                          child: const Icon(Icons.people)),
                       DynamicText(
                         text: event['hostName'] != null
                             ? 'Host: ${event['hostName']}'

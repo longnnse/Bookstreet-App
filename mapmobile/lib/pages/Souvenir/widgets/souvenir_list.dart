@@ -40,9 +40,9 @@ class SouvenirList extends StatelessWidget {
                         Image.network(imageURL,
                             fit: BoxFit.contain, width: itemWidth,
                             errorBuilder: (context, error, stackTrace) {
-                          return Container(
+                          return SizedBox(
                             width: itemWidth,
-                            child: Icon(Icons.error),
+                            child: const Icon(Icons.error),
                           ); // Display the fallback widget if an error occurs
                         }),
                         SizedBox(

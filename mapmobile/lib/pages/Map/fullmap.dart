@@ -15,7 +15,7 @@ class FullMap extends StatefulWidget {
 }
 
 class _FullMapState extends State<FullMap> {
-  dynamic selectedStore = null;
+  dynamic selectedStore;
 
   dynamic getStoreOnTap(String storeId) {
     getStoreById(storeId).then((res) {
@@ -109,7 +109,7 @@ class _FullMapState extends State<FullMap> {
           children: [
             Container(
               margin: const EdgeInsets.only(bottom: 40),
-              child: Header(),
+              child: const Header(),
             ),
             Consumer<MapModel>(builder: (context, value, child) {
               final model = context.read<MapModel>();

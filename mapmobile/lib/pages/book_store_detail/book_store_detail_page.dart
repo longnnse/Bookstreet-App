@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mapmobile/services/storeservice.dart';
 import 'package:mapmobile/shared/text.dart';
@@ -116,7 +115,7 @@ class _BookStoreDetailPageState extends State<BookStoreDetailPage> {
                           onTap: () {
                             Navigator.pop(context);
                           },
-                          child: Icon(
+                          child: const Icon(
                             Icons.arrow_back,
                             color: Colors.black,
                           ),

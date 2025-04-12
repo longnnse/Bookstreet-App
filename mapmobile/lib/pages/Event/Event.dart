@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mapmobile/pages/Event/widget/event_list.dart';
 import 'package:mapmobile/shared/header.dart';
-import 'package:mapmobile/pages/Event/widget/Eventlist.dart';
 import 'package:mapmobile/services/eventservice.dart';
 
 class Event extends StatefulWidget {
@@ -44,7 +44,8 @@ class _EventState extends State<Event> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                  margin: const EdgeInsets.only(bottom: 40), child: Header()),
+                  margin: const EdgeInsets.only(bottom: 40),
+                  child: const Header()),
               Eventlist(eventList: eventList)
             ],
           ),

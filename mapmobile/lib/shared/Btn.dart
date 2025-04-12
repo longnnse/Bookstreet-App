@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mapmobile/shared/text.dart';
 
 class Btn extends StatelessWidget {
-  Btn(
+  const Btn(
       {super.key,
       required this.content,
       this.bgColor = const Color.fromARGB(255, 198, 13, 0),

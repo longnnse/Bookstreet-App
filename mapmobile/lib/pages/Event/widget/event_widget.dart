@@ -5,7 +5,7 @@ import 'package:mapmobile/util/util.dart';
 
 class Eventwidget extends StatelessWidget {
   const Eventwidget({super.key, required this.event});
-  final event;
+  final Map<String, dynamic> event;
   @override
   Widget build(BuildContext context) {
     final imageURL = isImageUrl(event['urlImage'])

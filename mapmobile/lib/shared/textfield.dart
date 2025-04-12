@@ -9,7 +9,6 @@ class SearchTextField extends StatelessWidget {
       margin: const EdgeInsets.only(left: 10),
       child: TextField(
         onChanged: (value) {
-          print("text change ...$value");
           onTextChange(value);
         },
         decoration: const InputDecoration(
