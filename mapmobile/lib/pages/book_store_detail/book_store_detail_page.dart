@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mapmobile/pages/store_products_filter/store_products_filter_page.dart';
 import 'package:mapmobile/services/storeservice.dart';
+import 'package:mapmobile/shared/btn.dart';
 import 'package:mapmobile/shared/text.dart';
 
 class BookStoreDetailPage extends StatefulWidget {
@@ -73,7 +75,22 @@ class _BookStoreDetailPageState extends State<BookStoreDetailPage> {
                                       fontSize: 40,
                                       fontWeight: FontWeight.bold),
                                 ),
-                              )
+                              ),
+                              const Spacer(),
+                              Btn(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          StoreProductsFilterPage(
+                                        storeId: widget.storeId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                content: 'Xem tất cả sản phẩm',
+                              ),
                             ],
                           ),
                           Column(
@@ -95,7 +112,7 @@ class _BookStoreDetailPageState extends State<BookStoreDetailPage> {
                                   text: store['description'],
                                   textStyle: const TextStyle(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.bold))
+                                      fontWeight: FontWeight.bold)),
                             ],
                           )
                         ],

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mapmobile/common/widgets/app_dropdown.dart';
@@ -7,40 +6,49 @@ import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/ProductDetail/bookdetail.dart';
 import 'package:mapmobile/services/categoryservice.dart';
 import 'package:mapmobile/services/distributor_service.dart';
-import 'package:mapmobile/services/productservice.dart';
+import 'package:mapmobile/services/product_service.dart';
 import 'package:mapmobile/services/storeservice.dart';
 import 'package:mapmobile/util/util.dart';
 import 'package:provider/provider.dart';
 
-enum FilterType {
-  category,
-  store,
-  distributor,
-}
+class StoreProductsFilterPage extends StatefulWidget {
+  final int? storeId;
 
-class BookPage extends StatefulWidget {
-  const BookPage({super.key});
+  const StoreProductsFilterPage({super.key, this.storeId});
 
   @override
-  State<BookPage> createState() => _BookPageState();
+  State<StoreProductsFilterPage> createState() =>
+      _StoreProductsFilterPageState();
 }
 
-class _BookPageState extends State<BookPage> {
+class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   RangeValues? _initialPriceRange;
   RangeValues? _priceRange;
   final TextEditingController _searchController = TextEditingController();
+  final ProductService _productService = ProductService();
 
-  List<dynamic> books = [];
+  List<dynamic> products = [];
   List<dynamic> categoriesFilter = [];
-  List<dynamic> bookStoresFilter = [];
   List<dynamic> distributorsFilter = [];
+  List<dynamic> bookStoresFilter = [];
+  List<Map<String, dynamic>> productTypes = [
+    {'id': 1, 'name': 'Sách'},
+    {'id': 2, 'name': 'Quà lưu niệm'},
+  ];
 
+  int? selectedProductTypeId;
+  int? selectedStoreId;
   bool isLoading = true;
+  bool isLoadingFilters = false;
   Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
+    selectedStoreId = widget.storeId;
+    if (widget.storeId == null) {
+      selectedProductTypeId = 1;
+    }
     _loadData();
   }
 
@@ -55,78 +63,82 @@ class _BookPageState extends State<BookPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.wait([
         onFilter(),
-        fetchFilterData(FilterType.category),
-        fetchFilterData(FilterType.store),
-        fetchFilterData(FilterType.distributor),
+        fetchFilterData(),
       ]);
 
-      // Find min and max price from the books list
+      // Find min and max price from the products list
       double minPrice = double.infinity;
       double maxPrice = 0;
 
-      for (var book in books) {
-        double price =
-            book['price'] != null ? double.parse(book['price'].toString()) : 0;
+      for (var product in products) {
+        double price = product['price'] != null
+            ? double.parse(product['price'].toString())
+            : 0;
         if (price < minPrice) minPrice = price;
         if (price > maxPrice) maxPrice = price;
       }
 
-      _initialPriceRange = RangeValues(minPrice.isFinite ? minPrice : 0,
-          maxPrice.isFinite ? maxPrice : 10000000);
+      _initialPriceRange = RangeValues(
+        minPrice.isFinite ? minPrice : 0,
+        maxPrice.isFinite ? maxPrice : 10000000,
+      );
 
-      // Set price range with found min and max values
       _priceRange = _initialPriceRange;
     });
   }
 
-  Future<void> fetchFilterData(FilterType type) async {
+  Future<void> fetchFilterData() async {
     setState(() {
-      isLoading = true;
+      isLoadingFilters = true;
     });
 
-    switch (type) {
-      case FilterType.category:
-        await getAllCategory();
-        break;
-      case FilterType.store:
-        await getAllStore();
-        break;
-      case FilterType.distributor:
-        await getAllDistributorFilter();
-        break;
+    if (widget.storeId == null || selectedProductTypeId == 1) {
+      await Future.wait([
+        getAllCategory(),
+        getAllDistributorFilter(),
+        if (widget.storeId == null) getAllStore(),
+      ]);
     }
 
     setState(() {
-      isLoading = false;
+      isLoadingFilters = false;
+    });
+  }
+
+  Future<void> getAllStore() async {
+    await getAllBookStore().then((res) {
+      setState(() {
+        bookStoresFilter = res;
+      });
     });
   }
 
   Future<void> onFilter({
     int? categoryId,
-    int? genreId,
-    int? storeId,
     int? distributorId,
     double? minPrice,
     double? maxPrice,
+    int? productTypeId,
+    int? storeId,
   }) async {
     setState(() {
       isLoading = true;
     });
     try {
-      final res = await getBook(
+      final res = await _productService.filterProducts(
         search: _searchController.text,
         categoryId: categoryId,
-        genreId: genreId,
         streetId: getStreet().streetId,
-        storeId: storeId,
+        storeId: storeId ?? selectedStoreId ?? widget.storeId,
         distributorId: distributorId,
         minPrice: minPrice,
         maxPrice: maxPrice,
+        productTypeId: productTypeId ?? selectedProductTypeId,
       );
 
       if (mounted) {
         setState(() {
-          books = res.data['data']['list'];
+          products = res;
           isLoading = false;
         });
       }
@@ -134,9 +146,8 @@ class _BookPageState extends State<BookPage> {
       if (mounted) {
         setState(() {
           isLoading = false;
-          books = [];
+          products = [];
         });
-        // Consider adding error handling/display here
       }
     }
   }
@@ -145,14 +156,6 @@ class _BookPageState extends State<BookPage> {
     await getAllCate("1").then((res) {
       setState(() {
         categoriesFilter = res.data['data']['list'];
-      });
-    });
-  }
-
-  Future<void> getAllStore() async {
-    await getAllBookStore().then((res) {
-      setState(() {
-        bookStoresFilter = res;
       });
     });
   }
@@ -173,14 +176,18 @@ class _BookPageState extends State<BookPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text(widget.storeId == null
+            ? 'Thông tin sách'
+            : 'Sản phẩm của cửa hàng'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
             _buildFilterSection(),
             const SizedBox(width: 16),
-            _buildBooksGrid(),
+            _buildProductsGrid(),
           ],
         ),
       ),
@@ -200,12 +207,29 @@ class _BookPageState extends State<BookPage> {
         children: [
           _buildSearchField(),
           const SizedBox(height: 16),
-          if (bookStoresFilter.isNotEmpty) _buildStoreFilter(),
-          const SizedBox(height: 16),
-          if (categoriesFilter.isNotEmpty) _buildCategoryFilter(),
-          const SizedBox(height: 16),
-          if (distributorsFilter.isNotEmpty) _buildDistributorFilter(),
-          const SizedBox(height: 16),
+          if (widget.storeId != null) ...[
+            _buildProductTypeFilter(),
+            const SizedBox(height: 16),
+          ],
+          if (selectedProductTypeId == 1) ...[
+            if (isLoadingFilters) ...[
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ] else ...[
+              if (widget.storeId == null && bookStoresFilter.isNotEmpty)
+                _buildStoreFilter(),
+              if (widget.storeId == null && bookStoresFilter.isNotEmpty)
+                const SizedBox(height: 16),
+              if (categoriesFilter.isNotEmpty) _buildCategoryFilter(),
+              const SizedBox(height: 16),
+              if (distributorsFilter.isNotEmpty) _buildDistributorFilter(),
+              const SizedBox(height: 16),
+            ],
+          ],
           _buildPriceRangeFilter(),
         ],
       ),
@@ -216,7 +240,7 @@ class _BookPageState extends State<BookPage> {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        hintText: 'Tìm kiếm sách',
+        hintText: 'Tìm kiếm sản phẩm',
         prefixIcon: const Icon(Icons.search),
         border: const OutlineInputBorder(),
         suffixIcon: GestureDetector(
@@ -232,22 +256,6 @@ class _BookPageState extends State<BookPage> {
         _debounce = Timer(const Duration(milliseconds: 500), () {
           onFilter();
         });
-      },
-    );
-  }
-
-  Widget _buildStoreFilter() {
-    return AppDropdown(
-      label: 'Cửa hàng',
-      items: bookStoresFilter
-          .map((e) => DropdownValue(value: e, displayText: e['storeName']))
-          .toList(),
-      onChanged: (value) {
-        if (value == null) {
-          onFilter();
-        } else {
-          onFilter(storeId: value.value['storeId']);
-        }
       },
     );
   }
@@ -284,6 +292,25 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
+  Widget _buildProductTypeFilter() {
+    return AppDropdown(
+      label: 'Loại sản phẩm',
+      items: productTypes
+          .map((e) => DropdownValue(value: e, displayText: e['name']))
+          .toList(),
+      onChanged: (value) async {
+        if (value == null) {
+          setState(() => selectedProductTypeId = null);
+          onFilter();
+        } else {
+          setState(() => selectedProductTypeId = value.value['id']);
+          await fetchFilterData();
+          onFilter(productTypeId: value.value['id']);
+        }
+      },
+    );
+  }
+
   Widget _buildPriceRangeFilter() {
     final priceRange = _priceRange ?? _initialPriceRange;
     final initialPriceRange = _initialPriceRange;
@@ -315,11 +342,26 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
-  Widget _buildBooksGrid() {
+  Widget _buildStoreFilter() {
+    return AppDropdown(
+      label: 'Cửa hàng',
+      items: bookStoresFilter
+          .map((e) => DropdownValue(value: e, displayText: e['storeName']))
+          .toList(),
+      onChanged: (value) {
+        setState(() {
+          selectedStoreId = value?.value['storeId'];
+        });
+        onFilter(storeId: value?.value['storeId']);
+      },
+    );
+  }
+
+  Widget _buildProductsGrid() {
     return Expanded(
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : books.isEmpty
+          : products.isEmpty
               ? const Center(child: Text("Không tìm thấy sản phẩm"))
               : GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -328,19 +370,21 @@ class _BookPageState extends State<BookPage> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 0.7,
                   ),
-                  itemCount: books.length,
-                  itemBuilder: (context, index) => _buildBookCard(books[index]),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) =>
+                      _buildProductCard(products[index]),
                 ),
     );
   }
 
-  Widget _buildBookCard(dynamic book) {
+  Widget _buildProductCard(dynamic product) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BookDetail(pid: book['productId'].toString()),
+            builder: (context) =>
+                BookDetail(pid: product['productId'].toString()),
           ),
         );
       },
@@ -355,7 +399,7 @@ class _BookPageState extends State<BookPage> {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
                 child: CachedNetworkImage(
-                  imageUrl: book['urlImage']!,
+                  imageUrl: product['urlImage']!,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   placeholder: (context, url) =>
@@ -368,7 +412,7 @@ class _BookPageState extends State<BookPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                book['productName'],
+                product['productName'],
                 style: const TextStyle(fontWeight: FontWeight.bold),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -378,7 +422,7 @@ class _BookPageState extends State<BookPage> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               child: Text(
-                formatToVND(book['price']),
+                formatToVND(product['price']),
                 style: const TextStyle(color: Colors.green),
               ),
             ),

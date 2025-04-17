@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
+import 'package:mapmobile/pages/author/author_detail.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/services/productservice.dart';
 import 'package:mapmobile/shared/btn.dart';
@@ -72,7 +73,8 @@ class _BookDetailState extends State<BookDetail> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => MapWithPositionWidget(
+                                      builder: (context) =>
+                                          MapWithPositionWidget(
                                         storeId: product["storeId"].toString(),
                                         mapType: MapType.store,
                                       ),
@@ -105,8 +107,7 @@ class _BookDetailState extends State<BookDetail> {
                               DynamicText(
                                 text: product['productName'] ?? "",
                                 textStyle: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
+                                    fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               DynamicText(
                                 text: formatToVND(product['price'] ?? 0),
@@ -124,16 +125,38 @@ class _BookDetailState extends State<BookDetail> {
                                 childAspectRatio: 5,
                                 children: [
                                   const DynamicText(text: ("Tác giả")),
-                                  DynamicText(
-                                      text:
-                                          product?['book']?['authors'] != null
-                                              ? product?['book']?['authors']
-                                                  .join(", ")
-                                              : ""),
+                                  GestureDetector(
+                                    onTap: () {
+                                      ///TODO: get author id from product
+                                      if (product?['book']?['authors'] !=
+                                          null) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const AuthorDetail(
+                                                    authorId: '1'),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: Text(
+                                        product?['book']?['authors'] != null
+                                            ? product['book']['authors']
+                                                .join(", ")
+                                            : "",
+                                        style: const TextStyle(
+                                            color: Colors.green,
+                                            decoration:
+                                                TextDecoration.underline),
+                                      ),
+                                    ),
+                                  ),
                                   const DynamicText(text: ("Nhà xuất bản")),
                                   DynamicText(
-                                      text: product['book']
-                                              ?['publisherName'] ??
+                                      text: product['book']?['publisherName'] ??
                                           ""),
                                   const DynamicText(text: ("Nhà phân phối")),
                                   DynamicText(
@@ -146,8 +169,7 @@ class _BookDetailState extends State<BookDetail> {
                                           "chưa có"),
                                   const DynamicText(text: ("Được bán tại")),
                                   DynamicText(
-                                      text:
-                                          product['storeName'] ?? "chưa có"),
+                                      text: product['storeName'] ?? "chưa có"),
                                   const DynamicText(text: ("Tình trạng")),
                                   DynamicText(
                                     text: product['status'] == 1
@@ -162,8 +184,7 @@ class _BookDetailState extends State<BookDetail> {
                                   ),
                                   const DynamicText(text: ("Lần tái bản")),
                                   DynamicText(
-                                      text: product['book']
-                                                  ?['editionNumber'] !=
+                                      text: product['book']?['editionNumber'] !=
                                               null
                                           ? product['book']['editionNumber']
                                               .toString()
@@ -198,8 +219,7 @@ class _BookDetailState extends State<BookDetail> {
                               const DynamicText(
                                 text: "Mô tả sản phẩm",
                                 textStyle: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
+                                    fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               DynamicText(
                                 text: product['description'] ?? "",
