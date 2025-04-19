@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mapmobile/common/widgets/app_dropdown.dart';
 import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/pages/ProductDetail/bookdetail.dart';
+import 'package:mapmobile/pages/product_detail/product_detail.dart';
 import 'package:mapmobile/services/categoryservice.dart';
 import 'package:mapmobile/services/distributor_service.dart';
 import 'package:mapmobile/services/product_service.dart';
@@ -384,7 +384,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                BookDetail(pid: product['productId'].toString()),
+                ProductDetail(pid: product['productId'].toString()),
           ),
         );
       },

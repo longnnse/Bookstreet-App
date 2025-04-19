@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mapmobile/services/preferences_manager.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class NetworkService {
   static final NetworkService _instance = NetworkService._internal();
@@ -27,15 +28,16 @@ class NetworkService {
       },
     ));
 
-    // Add logging interceptor
+    // Add pretty logger interceptor
     if (kDebugMode) {
-      _dio?.interceptors.add(LogInterceptor(
-        request: true,
+      _dio?.interceptors.add(PrettyDioLogger(
         requestHeader: true,
         requestBody: true,
-        responseHeader: true,
         responseBody: true,
+        responseHeader: false,
         error: true,
+        compact: true,
+        maxWidth: 90,
       ));
     }
 

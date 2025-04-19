@@ -25,6 +25,9 @@ dependencies:
   webview_flutter: ^4.10.0
   webview_flutter_wkwebview: ^3.18.5
   webview_flutter_android: ^4.3.4
+  shimmer: ^3.0.0
+  pretty_dio_logger: ^1.4.0
+  flutter_otp_text_field: ^1.5.1+1
 
 dev_dependencies:
   flutter_test:

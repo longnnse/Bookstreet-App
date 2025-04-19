@@ -42,11 +42,36 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
     context.pop();
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xác nhận'),
+        content:
+            const Text('Bạn có chắc chắn muốn thoát khỏi trang thanh toán?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Đồng ý'),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Thanh toán VNPay")),
-      body: WebViewWidget(controller: _controller),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Thanh toán VNPay")),
+        body: WebViewWidget(controller: _controller),
+      ),
     );
   }
 }
