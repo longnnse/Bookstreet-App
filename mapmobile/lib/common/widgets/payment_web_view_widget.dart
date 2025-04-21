@@ -66,8 +66,13 @@ class _PaymentWebViewWidgetState extends State<PaymentWebViewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (bool result, data) {
+        if (result) {
+          _onWillPop();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(title: const Text("Thanh toán VNPay")),
         body: WebViewWidget(controller: _controller),

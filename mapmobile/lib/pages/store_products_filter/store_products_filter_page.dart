@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mapmobile/common/widgets/app_dropdown.dart';
+import 'package:mapmobile/common/widgets/cart_button.dart';
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/product_detail/product_detail.dart';
 import 'package:mapmobile/services/categoryservice.dart';
@@ -180,6 +181,12 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
         title: Text(widget.storeId == null
             ? 'Thông tin sách'
             : 'Sản phẩm của cửa hàng'),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: CartButton(),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

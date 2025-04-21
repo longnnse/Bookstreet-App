@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mapmobile/common/widgets/cart_button.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
 import 'package:mapmobile/common/widgets/show_message.dart';
 import 'package:mapmobile/pages/author/author_detail.dart';
@@ -8,7 +9,6 @@ import 'package:mapmobile/util/util.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../models/cart_item.dart';
 import '../../services/cart_service.dart';
-import '../../pages/cart/cart_page.dart';
 
 class ProductDetail extends StatefulWidget {
   const ProductDetail({super.key, required this.pid});
@@ -352,18 +352,10 @@ class _ProductDetailState extends State<ProductDetail> {
     return Scaffold(
       appBar: AppBar(
         title: Text(product['productName'] ?? ""),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const CartPage(userId: 'current_user_id'),
-                ),
-              );
-            },
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: CartButton(),
           ),
         ],
       ),

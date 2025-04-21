@@ -4,6 +4,8 @@ import 'package:mapmobile/services/auth_service.dart';
 import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/shared/text.dart';
 import 'package:provider/provider.dart';
+import 'package:mapmobile/pages/auth/login_page.dart';
+import 'package:mapmobile/common/widgets/cart_button.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key, required this.callback});
@@ -33,29 +35,53 @@ class Header extends StatelessWidget {
                         )
                       ],
                     )),
-            if (PreferencesManager.getUserData() != null)
-              Column(
-                children: [
-                  Text(
-                    'Xin chào, ${PreferencesManager.getUserData()?['user']['fullName'] ?? ''}',
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+            Row(
+              children: [
+                const CartButton(),
+                const SizedBox(width: 24),
+                if (PreferencesManager.getUserData() != null)
+                  Column(
+                    children: [
+                      Text(
+                        'Xin chào, ${PreferencesManager.getUserData()?['user']['fullName'] ?? ''}',
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () async {
+                          await AuthService().logout();
+                          callback();
+                        },
+                        child: const Text(
+                          'Đăng xuất',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    ],
+                  )
+                else
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    onPressed: () async {
-                      await AuthService().logout();
-                      callback();
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      );
                     },
                     child: const Text(
-                      'Đăng xuất',
+                      'Đăng nhập',
                       style: TextStyle(color: Colors.white),
                     ),
-                  )
-                ],
-              )
+                  ),
+              ],
+            ),
           ],
         ),
       ),

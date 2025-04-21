@@ -1,15 +1,25 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../models/cart_item.dart';
+
+import 'package:flutter/material.dart';
+import 'package:mapmobile/models/cart_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CartService {
   static const String _cartKey = 'user_cart';
+
+  // 👇 Notifier để các widget khác có thể lắng nghe thay đổi
+  static final ValueNotifier<int> cartCountNotifier = ValueNotifier<int>(0);
+
+  Future<void> _updateNotifier() async {
+    final items = await getCartItems();
+    final count = items.fold(0, (sum, item) => sum + item.quantity);
+    cartCountNotifier.value = count;
+  }
 
   Future<List<CartItem>> getCartItems() async {
     final prefs = await SharedPreferences.getInstance();
     final String? cartData = prefs.getString(_cartKey);
     if (cartData == null) return [];
-
     List<dynamic> items = jsonDecode(cartData);
     return items.map((item) => CartItem.fromJson(item)).toList();
   }
@@ -30,6 +40,8 @@ class CartService {
       _cartKey,
       jsonEncode(currentCart.map((i) => i.toJson()).toList()),
     );
+
+    await _updateNotifier(); // 👈 Gọi cập nhật sau khi add
   }
 
   Future<void> removeFromCart(String productId) async {
@@ -41,6 +53,8 @@ class CartService {
       _cartKey,
       jsonEncode(currentCart.map((i) => i.toJson()).toList()),
     );
+
+    await _updateNotifier(); // 👈 Gọi cập nhật
   }
 
   Future<void> updateQuantity(String productId, int quantity) async {
@@ -59,12 +73,13 @@ class CartService {
       _cartKey,
       jsonEncode(currentCart.map((i) => i.toJson()).toList()),
     );
+
+    await _updateNotifier(); // 👈 Gọi cập nhật
   }
 
   Future<void> clearCart() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_cartKey);
+    cartCountNotifier.value = 0; // 👈 reset notifier
   }
-
-  
 }

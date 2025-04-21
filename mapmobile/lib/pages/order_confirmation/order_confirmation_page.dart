@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class OrderConfirmationPage extends StatefulWidget {
-  const OrderConfirmationPage({Key? key}) : super(key: key);
+  const OrderConfirmationPage({super.key});
 
   @override
   State<OrderConfirmationPage> createState() => _OrderConfirmationPageState();
