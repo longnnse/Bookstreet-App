@@ -72,7 +72,12 @@ class _MembershipInfoPageState extends State<MembershipInfoPage> {
                     const SizedBox(height: 32),
                     _buildWalletCard(),
                     const SizedBox(height: 24),
-                    _buildPointsCard(),
+                    Row(
+                      children: [
+                        Expanded(child: _buildPointsCard()),
+                        Expanded(child: _buildOrderCard()),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -239,6 +244,63 @@ class _MembershipInfoPageState extends State<MembershipInfoPage> {
                   foregroundColor: const Color(0xFFB60C00),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   side: const BorderSide(color: Color(0xFFB60C00)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Lịch sử đơn hàng',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Icon(Icons.receipt_long, size: 24),
+              ],
+            ),
+            const SizedBox(height: 120),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TransactionHistoryPage(
+                        type: TransactionHistoryType.orders,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.history),
+                label: const Text('Xem lịch sử mua hàng'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFFB60C00),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: const BorderSide(color: Color(0xFFB60C00)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ),

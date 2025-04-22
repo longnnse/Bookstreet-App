@@ -16,4 +16,17 @@ class CustomerService {
     });
     return response.data['data']['list'];
   }
+
+  Future<List<dynamic>> getOrderInfoById(String orderId) async {
+    final response = await _dio.get('Customer/order/$orderId');
+    return response.data['data'];
+  }
+
+  Future<List<dynamic>> getOrderHistory() async {
+    final response = await _dio.post('Customer/orders', data: {
+      'page': 0,
+      'limit': -1,
+    });
+    return response.data['data']['list'];
+  }
 }

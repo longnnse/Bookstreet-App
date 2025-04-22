@@ -4,10 +4,12 @@ import 'package:mapmobile/services/customer_service.dart';
 import 'package:mapmobile/services/point_history.dart';
 import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/util/util.dart';
+import 'package:mapmobile/pages/Order/order_detail_page.dart';
 
 enum TransactionHistoryType {
   wallet,
   points,
+  orders,
 }
 
 enum TransactionType {
@@ -86,6 +88,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
 
   List<Map<String, dynamic>> _transactions = [];
   List<Map<String, dynamic>> _points = [];
+  List<Map<String, dynamic>> _orders = [];
   final PointHistoryService _pointHistoryService = PointHistoryService();
 
   @override
@@ -98,6 +101,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.type == TransactionHistoryType.points) {
         _loadPointHistory();
+      } else if (widget.type == TransactionHistoryType.orders) {
+        _loadOrders();
       } else {
         _loadTransactions();
       }
@@ -155,23 +160,42 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     }
   }
 
+  Future<void> _loadOrders() async {
+    try {
+      final orders = await _customerService.getOrderHistory();
+      setState(() {
+        _orders = orders.map((item) => item as Map<String, dynamic>).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load orders: $e')),
+      );
+    }
+  }
+
   Future<void> _refreshTransactions() async {
-    await _loadTransactions();
+    if (widget.type == TransactionHistoryType.points) {
+      await _loadPointHistory();
+    } else if (widget.type == TransactionHistoryType.orders) {
+      await _loadOrders();
+    } else {
+      await _loadTransactions();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(TransactionHistoryType.wallet == widget.type
-            ? 'Lịch sử giao dịch'
-            : 'Lịch sử tích điểm'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshTransactions,
-          ),
-        ],
+        title: Text(
+          widget.type == TransactionHistoryType.wallet
+              ? 'Lịch sử giao dịch'
+              : widget.type == TransactionHistoryType.points
+                  ? 'Lịch sử tích điểm'
+                  : 'Lịch sử đơn hàng',
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _refreshTransactions,
@@ -182,7 +206,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
                 child: CircularProgressIndicator(),
               ),
             if (!_isLoading)
-              _transactions.isEmpty && _points.isEmpty
+              _transactions.isEmpty && _points.isEmpty && _orders.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -205,7 +229,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
                     )
                   : widget.type == TransactionHistoryType.points
                       ? _pointHistoryWidget()
-                      : _transactionHistoryWidget(),
+                      : widget.type == TransactionHistoryType.orders
+                          ? _orderHistoryWidget()
+                          : _transactionHistoryWidget(),
           ],
         ),
       ),
@@ -293,6 +319,127 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     );
   }
 
+  Widget _orderHistoryWidget() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _orders.length,
+      reverse: true,
+      itemBuilder: (context, index) {
+        final order = _orders[index];
+        final orderStatus = _getOrderStatus(order['status'] ?? 1);
+        final orderDate =
+            DateTime.parse(order['createDate'] ?? DateTime.now().toString());
+        final storeName = order['storeName'] ?? 'Unknown Store';
+        final subTotal = order['subTotal'] ?? 0.0;
+
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 4,
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: orderStatus.color.withAlpha(100),
+              child: Icon(
+                orderStatus.icon,
+                color: orderStatus.color,
+              ),
+            ),
+            title: Text(
+              'Đơn hàng #${order['orderId']}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  storeName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  DateFormat('HH:mm dd/MM/yyyy').format(orderDate),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatToVND(subTotal),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  orderStatus.text,
+                  style: TextStyle(
+                    color: orderStatus.color,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      OrderDetailPage(orderId: order['orderId'].toString()),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  OrderStatus _getOrderStatus(int status) {
+    switch (status) {
+      case 1:
+        return OrderStatus(
+          text: 'Đang chờ xử lý',
+          color: Colors.orange,
+          icon: Icons.pending,
+        );
+      case 2:
+        return OrderStatus(
+          text: 'Đang xử lý',
+          color: Colors.blue,
+          icon: Icons.shopping_cart,
+        );
+      case 3:
+        return OrderStatus(
+          text: 'Hoàn thành',
+          color: Colors.green,
+          icon: Icons.check_circle,
+        );
+      case 4:
+        return OrderStatus(
+          text: 'Đã hủy',
+          color: Colors.red,
+          icon: Icons.cancel,
+        );
+      default:
+        return OrderStatus(
+          text: 'Không xác định',
+          color: Colors.grey,
+          icon: Icons.help,
+        );
+    }
+  }
+
   Widget _transactionHistoryWidget() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -343,4 +490,16 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
       },
     );
   }
+}
+
+class OrderStatus {
+  final String text;
+  final Color color;
+  final IconData icon;
+
+  OrderStatus({
+    required this.text,
+    required this.color,
+    required this.icon,
+  });
 }
