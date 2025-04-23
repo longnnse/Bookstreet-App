@@ -299,7 +299,7 @@ class _MembershipInfoPageState extends State<MembershipInfoPage> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   side: const BorderSide(color: Color(0xFFB60C00)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
               ),

@@ -394,8 +394,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      OrderDetailPage(orderId: order['orderId'].toString()),
+                  builder: (context) => OrderDetailPage(
+                      orderId: order['storeOrderId'].toString()),
                 ),
               );
             },
