@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/models/map_model.dart';
+import 'package:mapmobile/pages/cart/cart_page.dart';
 import 'package:mapmobile/services/auth_service.dart';
 import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/shared/text.dart';
@@ -37,7 +38,28 @@ class Header extends StatelessWidget {
                     )),
             Row(
               children: [
-                const CartButton(),
+                CartButton(
+                  customOnPressed: () async {
+                    if (PreferencesManager.getUserData() != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CartPage(),
+                        ),
+                      );
+                    } else {
+                      final result = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      );
+                      if (result != null && result) {
+                        callback();
+                      }
+                    }
+                  },
+                ),
                 const SizedBox(width: 24),
                 if (PreferencesManager.getUserData() != null)
                   Column(
@@ -67,13 +89,16 @@ class Header extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final result = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const LoginPage(),
                         ),
                       );
+                      if (result != null && result) {
+                        callback();
+                      }
                     },
                     child: const Text(
                       'Đăng nhập',

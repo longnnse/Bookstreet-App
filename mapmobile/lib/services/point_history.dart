@@ -8,14 +8,6 @@ class PointHistoryService {
     final response = await _dio.post('PointHistory/paginate', data: {
       'page': 0,
       'limit': 0,
-      'filters': [
-        {
-          'field': 'customerId',
-          'value': customerId,
-          'operand': 0,
-          'isList': true
-        }
-      ]
     });
     return response.data['data']['list'];
   }

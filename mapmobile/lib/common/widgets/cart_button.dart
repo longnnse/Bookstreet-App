@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mapmobile/pages/auth/login_page.dart';
 import 'package:mapmobile/pages/cart/cart_page.dart';
 import 'package:mapmobile/services/cart_service.dart';
-import 'package:mapmobile/services/preferences_manager.dart';
 
 class CartButton extends StatelessWidget {
-  const CartButton({super.key});
+  const CartButton({super.key, this.customOnPressed});
+  final VoidCallback? customOnPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -17,18 +16,13 @@ class CartButton extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                if (PreferencesManager.getUserData() != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CartPage(),
-                    ),
-                  );
+                if (customOnPressed != null) {
+                  customOnPressed!();
                 } else {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginPage(),
+                      builder: (context) => const CartPage(),
                     ),
                   );
                 }

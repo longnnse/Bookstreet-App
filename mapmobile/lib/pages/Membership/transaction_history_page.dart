@@ -248,6 +248,11 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
         final pointAmount = point['pointAmount'].toInt();
         final storeName = point['storeName'];
         final invoiceCode = point['invoiceCode'];
+        final currentPoint = point['currentPoint'];
+        final giftId = point['giftId'];
+        final gift = point['gift'];
+        final amount = point['amount'];
+        final quantity = point['quantity'];
 
         return Card(
           shape: RoundedRectangleBorder(
@@ -264,21 +269,23 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
               ),
             ),
             title: Text(
-              '$pointAmount điểm',
+              '${pointAmount > 0 ? '+' : ''}$pointAmount điểm',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: pointStatus.color,
               ),
             ),
             subtitle: Text(
-              'Tại $storeName cho hóa đơn $invoiceCode',
+              giftId != null
+                  ? 'Tại $storeName'
+                  : 'Tại $storeName cho đơn hàng ${formatToVND(amount)}',
               style: const TextStyle(
                 fontSize: 16,
               ),
             ),
             trailing: Text(
-              DateFormat('dd/MM/yyyy')
-                  .format(DateTime.parse(point['statusChangedAt'])),
+              DateFormat('dd/MM/yyyy').format(DateTime.parse(
+                  point['statusChangedAt'] ?? DateTime.now().toString())),
               style: const TextStyle(
                 fontSize: 16,
               ),
@@ -302,7 +309,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Bạn được cộng $pointAmount điểm tại $storeName cho hóa đơn $invoiceCode',
+                          giftId != null
+                              ? 'Bạn đã dùng ${pointAmount.abs()} điểm đổi $quantity ${gift['giftName']} tại cửa hàng quà tặng. Số điểm hiện tại của bạn là $currentPoint.'
+                              : 'Bạn được cộng $pointAmount điểm cho đơn hàng ${formatToVND(amount)} tại $storeName. Số điểm hiện tại của bạn là $currentPoint.',
                           style: const TextStyle(
                             fontSize: 14,
                           ),
