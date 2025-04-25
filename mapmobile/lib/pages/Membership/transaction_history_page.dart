@@ -18,8 +18,8 @@ enum TransactionType {
 }
 
 enum PointStatus {
-  deposit,
-  withdrawal,
+  earning,
+  spending,
 }
 
 extension TransactionTypeExtension on TransactionType {
@@ -48,23 +48,23 @@ extension TransactionTypeExtension on TransactionType {
 extension PointStatusExtension on PointStatus {
   static PointStatus fromValue(int value) {
     switch (value) {
-      case 2:
-        return PointStatus.deposit;
       case 1:
-        return PointStatus.withdrawal;
+        return PointStatus.earning;
+      case 2:
+        return PointStatus.spending;
       default:
-        return PointStatus.deposit;
+        return PointStatus.earning;
     }
   }
 
   IconData get icon => switch (this) {
-        PointStatus.deposit => Icons.add,
-        PointStatus.withdrawal => Icons.remove,
+        PointStatus.earning => Icons.add,
+        PointStatus.spending => Icons.remove,
       };
 
   Color get color => switch (this) {
-        PointStatus.deposit => Colors.green,
-        PointStatus.withdrawal => Colors.red,
+        PointStatus.earning => Colors.green,
+        PointStatus.spending => Colors.red,
       };
 }
 
@@ -253,7 +253,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
         final gift = point['gift'];
         final amount = point['amount'];
         final quantity = point['quantity'];
-
+        final note = point['note'] ?? '';
         return Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -269,16 +269,18 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
               ),
             ),
             title: Text(
-              '${pointAmount > 0 ? '+' : ''}$pointAmount điểm',
+              '$pointAmount điểm',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: pointStatus.color,
               ),
             ),
             subtitle: Text(
-              giftId != null
-                  ? 'Tại $storeName'
-                  : 'Tại $storeName cho đơn hàng ${formatToVND(amount)}',
+              note.isNotEmpty
+                  ? note
+                  : giftId != null
+                      ? 'Bạn đã dùng $pointAmount điểm để đổi $quantity ${gift['giftName']} tại cửa hàng quà tặng. Số điểm hiện tại của bạn là $currentPoint.'
+                      : 'Bạn ${pointStatus == PointStatus.earning ? 'được cộng' : 'đã dùng'} $pointAmount điểm cho đơn hàng ${formatToVND(amount)} tại $storeName. Số điểm hiện tại của bạn là $currentPoint.',
               style: const TextStyle(
                 fontSize: 16,
               ),
@@ -290,38 +292,6 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
                 fontSize: 16,
               ),
             ),
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Chi tiết điểm',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          giftId != null
-                              ? 'Bạn đã dùng ${pointAmount.abs()} điểm đổi $quantity ${gift['giftName']} tại cửa hàng quà tặng. Số điểm hiện tại của bạn là $currentPoint.'
-                              : 'Bạn được cộng $pointAmount điểm cho đơn hàng ${formatToVND(amount)} tại $storeName. Số điểm hiện tại của bạn là $currentPoint.',
-                          style: const TextStyle(
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
           ),
         );
       },
