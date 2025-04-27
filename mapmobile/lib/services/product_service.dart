@@ -26,8 +26,8 @@ class ProductService {
         ];
       }
 
-      // Add category filter for books
-      if (productTypeId == 1 && categoryId != null && categoryId != 0) {
+      // Add category filter for all
+      if (categoryId != null && categoryId != 0) {
         filterData = [
           ...filterData,
           {"field": "CategoryId", "value": "$categoryId", "operand": 0}

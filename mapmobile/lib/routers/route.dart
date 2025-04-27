@@ -6,7 +6,6 @@ import 'package:mapmobile/pages/ProductDetail/bookdetail.dart';
 import 'package:mapmobile/pages/ProductDetail/productdetail.dart';
 import 'package:mapmobile/pages/ProductDetail/souvernirdetail.dart';
 import 'package:mapmobile/pages/Welcome/Welcome.dart';
-import 'package:mapmobile/pages/souvenir/souvenir_widget.dart';
 
 // GoRouter configuration
 final router = GoRouter(
@@ -24,10 +23,6 @@ final router = GoRouter(
       path: '/souvernir/:id',
       builder: (context, state) =>
           SouvernirDetail(pid: state.pathParameters['id']),
-    ),
-    GoRoute(
-      path: '/souvenir',
-      builder: (context, state) => const Souvenir(),
     ),
     GoRoute(
       path: '/map',

@@ -29,8 +29,19 @@ class _EventPageState extends State<EventPage> {
 
       final response = await _eventService.getEvent(search: search);
       if (mounted) {
+        final now = DateTime.now();
+        final filteredEvents = response.where((event) {
+          try {
+            final startDate = DateTime.parse(event['starDate']);
+            final endDate = DateTime.parse(event['endDate']);
+            return now.isAfter(startDate) && now.isBefore(endDate);
+          } catch (e) {
+            return false; // Skip events with invalid dates
+          }
+        }).toList();
+
         setState(() {
-          eventList = response;
+          eventList = filteredEvents;
           isLoading = false;
         });
       }

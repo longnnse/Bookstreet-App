@@ -5,7 +5,7 @@ import 'package:mapmobile/common/widgets/app_dropdown.dart';
 import 'package:mapmobile/common/widgets/cart_button.dart';
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/product_detail/product_detail.dart';
-import 'package:mapmobile/services/categoryservice.dart';
+import 'package:mapmobile/services/category_service.dart';
 import 'package:mapmobile/services/distributor_service.dart';
 import 'package:mapmobile/services/product_service.dart';
 import 'package:mapmobile/services/storeservice.dart';
@@ -59,6 +59,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   RangeValues? _priceRange;
   final TextEditingController _searchController = TextEditingController();
   final ProductService _productService = ProductService();
+  final CategoryService _categoryService = CategoryService();
 
   List<dynamic> products = [];
   List<dynamic> categoriesFilter = [];
@@ -123,13 +124,15 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
       isLoadingFilters = true;
     });
 
-    if (widget.storeId == null || selectedProductTypeId == 1) {
-      await Future.wait([
-        getAllCategory(),
+    await Future.wait([
+      getAllCategory(),
+      if (widget.productType == ProductType.all ||
+          widget.productType == ProductType.book)
         getAllDistributorFilter(),
-        if (widget.storeId == null) getAllStore(),
-      ]);
-    }
+      if (widget.productType == ProductType.all ||
+          widget.productType == ProductType.souvenir)
+        getAllStore(),
+    ]);
 
     setState(() {
       isLoadingFilters = false;
@@ -184,9 +187,11 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   }
 
   Future<void> getAllCategory() async {
-    await getAllCate("1").then((res) {
+    await _categoryService
+        .getAllCategory(selectedProductTypeId.toString())
+        .then((res) {
       setState(() {
-        categoriesFilter = res.data['data']['list'];
+        categoriesFilter = res;
       });
     });
   }
@@ -242,7 +247,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
         children: [
           _buildSearchField(),
           const SizedBox(height: 16),
-          if (widget.storeId != null) ...[
+          if (widget.productType == ProductType.all) ...[
             _buildProductTypeFilter(),
             const SizedBox(height: 16),
           ],
@@ -255,16 +260,15 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
                 ),
               ),
             ] else ...[
-              if (widget.storeId == null && bookStoresFilter.isNotEmpty)
+              if (widget.productType == ProductType.all &&
+                  bookStoresFilter.isNotEmpty)
                 _buildStoreFilter(),
-              if (widget.storeId == null && bookStoresFilter.isNotEmpty)
-                const SizedBox(height: 16),
-              if (categoriesFilter.isNotEmpty) _buildCategoryFilter(),
-              const SizedBox(height: 16),
               if (distributorsFilter.isNotEmpty) _buildDistributorFilter(),
               const SizedBox(height: 16),
             ],
           ],
+          if (categoriesFilter.isNotEmpty) _buildCategoryFilter(),
+          const SizedBox(height: 16),
           _buildPriceRangeFilter(),
         ],
       ),
@@ -313,7 +317,9 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
 
   Widget _buildCategoryFilter() {
     return AppDropdown(
-      label: 'Loại sách',
+      label: widget.productType == ProductType.book
+          ? 'Loại sách'
+          : 'Loại quà lưu niệm',
       items: categoriesFilter
           .map((e) => DropdownValue(value: e, displayText: e['categoryName']))
           .toList(),

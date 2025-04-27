@@ -60,7 +60,7 @@ class _EventDetailPageState extends State<EventDetailPage>
     if (dateString == null) return 'Không có ngày được chỉ định';
     try {
       final date = DateTime.parse(dateString);
-      return DateFormat('MMM dd, yyyy hh:mm a').format(date);
+      return DateFormat('dd/MM/yyyy, HH:mm').format(date);
     } catch (e) {
       return 'Ngày không hợp lệ';
     }
