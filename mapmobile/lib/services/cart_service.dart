@@ -28,11 +28,22 @@ class CartService {
     final prefs = await SharedPreferences.getInstance();
     List<CartItem> currentCart = await getCartItems();
 
-    int existingIndex =
+    // First check by productId
+    int existingIndexByProductId =
         currentCart.indexWhere((i) => i.productId == item.productId);
-    if (existingIndex != -1) {
-      currentCart[existingIndex].quantity += 1;
+
+    // Then check by ISBN
+    int existingIndexByIsbn =
+        currentCart.indexWhere((i) => i.isbn == item.isbn);
+
+    if (existingIndexByProductId != -1) {
+      // If found by productId, increment quantity
+      currentCart[existingIndexByProductId].quantity += 1;
+    } else if (existingIndexByIsbn != -1) {
+      // If found by ISBN but different productId, increment quantity
+      currentCart[existingIndexByIsbn].quantity += 1;
     } else {
+      // If not found by either, add new item
       currentCart.add(item);
     }
 
@@ -41,7 +52,7 @@ class CartService {
       jsonEncode(currentCart.map((i) => i.toJson()).toList()),
     );
 
-    await _updateNotifier(); // 👈 Gọi cập nhật sau khi add
+    await _updateNotifier();
   }
 
   Future<void> removeFromCart(String productId) async {

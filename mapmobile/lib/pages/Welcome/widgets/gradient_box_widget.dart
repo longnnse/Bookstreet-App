@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
-import 'package:mapmobile/pages/Event/Event.dart';
 import 'package:mapmobile/pages/Membership/membership_info_page.dart';
 import 'package:mapmobile/pages/author/author_page.dart';
 import 'package:mapmobile/pages/auth/login_page.dart';
-import 'package:mapmobile/pages/souvenir/souvenir_widget.dart';
+import 'package:mapmobile/pages/event/event_page.dart';
 import 'package:mapmobile/pages/store_products_filter/store_products_filter_page.dart';
 import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/shared/box.dart';
@@ -88,7 +87,9 @@ class GradientMenu extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const StoreProductsFilterPage(),
+                      builder: (context) => const StoreProductsFilterPage(
+                        productType: ProductType.book,
+                      ),
                     ),
                   );
                   break;
@@ -124,7 +125,9 @@ class GradientMenu extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Souvenir(),
+                      builder: (context) => const StoreProductsFilterPage(
+                        productType: ProductType.souvenir,
+                      ),
                     ),
                   );
                   break;
@@ -132,7 +135,7 @@ class GradientMenu extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Event(),
+                      builder: (context) => const EventPage(),
                     ),
                   );
                   break;

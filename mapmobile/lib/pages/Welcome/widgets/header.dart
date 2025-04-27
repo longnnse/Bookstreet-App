@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/cart/cart_page.dart';
 import 'package:mapmobile/services/auth_service.dart';
+import 'package:mapmobile/services/cart_service.dart';
 import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/shared/text.dart';
 import 'package:provider/provider.dart';
@@ -75,6 +76,7 @@ class Header extends StatelessWidget {
                         ),
                         onPressed: () async {
                           await AuthService().logout();
+                          await CartService().clearCart();
                           callback();
                         },
                         child: const Text(

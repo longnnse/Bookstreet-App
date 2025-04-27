@@ -46,10 +46,6 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
     for (var controller in _otpControllers) {
       otp += controller.text;
     }
-    if (otp.length == 6) {
-      // TODO: Implement OTP validation logic
-      print('OTP entered: $otp');
-    }
   }
 
   void _onOTPChanged(int index, String value) {
@@ -154,10 +150,6 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                     String otp = '';
                     for (var controller in _otpControllers) {
                       otp += controller.text;
-                    }
-                    if (otp.length == 6) {
-                      // TODO: Implement submit logic
-                      print('Submitting OTP: $otp');
                     }
                   },
                   style: ElevatedButton.styleFrom(

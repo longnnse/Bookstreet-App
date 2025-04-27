@@ -85,6 +85,7 @@ class _BookStoreDetailPageState extends State<BookStoreDetailPage> {
                                       builder: (context) =>
                                           StoreProductsFilterPage(
                                         storeId: widget.storeId,
+                                        productType: ProductType.all,
                                       ),
                                     ),
                                   );

@@ -240,6 +240,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
 
   Widget _pointHistoryWidget() {
     return ListView.builder(
+      reverse: true,
       itemCount: _points.length,
       itemBuilder: (context, index) {
         final point = _points[index];
@@ -287,7 +288,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
             ),
             trailing: Text(
               DateFormat('dd/MM/yyyy').format(DateTime.parse(
-                  point['statusChangedAt'] ?? DateTime.now().toString())),
+                  point['createDate'] ?? DateTime.now().toString())),
               style: const TextStyle(
                 fontSize: 16,
               ),
@@ -399,17 +400,13 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
           icon: Icons.shopping_cart,
         );
       case 3:
+      case 4:
         return OrderStatus(
           text: 'Hoàn thành',
           color: Colors.green,
           icon: Icons.check_circle,
         );
-      case 4:
-        return OrderStatus(
-          text: 'Đã hủy',
-          color: Colors.red,
-          icon: Icons.cancel,
-        );
+
       default:
         return OrderStatus(
           text: 'Không xác định',

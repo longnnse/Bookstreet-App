@@ -12,10 +12,42 @@ import 'package:mapmobile/services/storeservice.dart';
 import 'package:mapmobile/util/util.dart';
 import 'package:provider/provider.dart';
 
+enum ProductType {
+  book,
+  souvenir,
+  all,
+}
+
+extension ProductTypeExtension on ProductType {
+  String get name {
+    switch (this) {
+      case ProductType.book:
+        return 'Sách';
+      case ProductType.souvenir:
+        return 'Quà lưu niệm';
+      case ProductType.all:
+        return 'Tất cả sản phẩm của cửa hàng';
+    }
+  }
+
+  int? get id {
+    switch (this) {
+      case ProductType.book:
+        return 1;
+      case ProductType.souvenir:
+        return 2;
+      case ProductType.all:
+        return null;
+    }
+  }
+}
+
 class StoreProductsFilterPage extends StatefulWidget {
   final int? storeId;
+  final ProductType productType;
 
-  const StoreProductsFilterPage({super.key, this.storeId});
+  const StoreProductsFilterPage(
+      {super.key, this.storeId, required this.productType});
 
   @override
   State<StoreProductsFilterPage> createState() =>
@@ -47,9 +79,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   void initState() {
     super.initState();
     selectedStoreId = widget.storeId;
-    if (widget.storeId == null) {
-      selectedProductTypeId = 1;
-    }
+    selectedProductTypeId = widget.productType.id;
     _loadData();
   }
 
@@ -178,9 +208,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.storeId == null
-            ? 'Thông tin sách'
-            : 'Sản phẩm của cửa hàng'),
+        title: Text(widget.productType.name),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16),

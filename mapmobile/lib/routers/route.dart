@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:mapmobile/pages/EventDetail/eventdetail.dart';
 import 'package:mapmobile/pages/KiosPicking/kiospicking.dart';
 import 'package:mapmobile/pages/Map/fullmap.dart';
 import 'package:mapmobile/pages/MapPicking/mapPicking.dart';
@@ -25,11 +24,6 @@ final router = GoRouter(
       path: '/souvernir/:id',
       builder: (context, state) =>
           SouvernirDetail(pid: state.pathParameters['id']),
-    ),
-    GoRoute(
-      path: '/event/:id',
-      builder: (context, state) =>
-          EventDetail(eventId: state.pathParameters['id']),
     ),
     GoRoute(
       path: '/souvenir',

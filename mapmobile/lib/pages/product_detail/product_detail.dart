@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:mapmobile/common/widgets/cart_button.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
 import 'package:mapmobile/common/widgets/show_message.dart';
@@ -88,9 +90,8 @@ class _ProductDetailState extends State<ProductDetail> {
               child: NetworkImageWithFallback(
                 imageUrl: product["urlImage"] ?? "",
                 fallbackWidget: const Icon(Icons.error, size: 100),
-                height: 300,
-                width: 200,
                 fit: BoxFit.cover,
+                height: 1.sh / 2,
               ),
             ),
             const SizedBox(height: 20),
@@ -99,6 +100,7 @@ class _ProductDetailState extends State<ProductDetail> {
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
+                  height: 50,
                   child: ElevatedButton.icon(
                     onPressed: () async {
                       if (product['status'] != 1) {
@@ -118,6 +120,7 @@ class _ProductDetailState extends State<ProductDetail> {
                           imageUrl: product['urlImage'] ?? "",
                           price: (product['price'] ?? 0).toDouble(),
                           quantity: 1,
+                          isbn: product['book']?['isbn'],
                         );
 
                         await _cartService.addToCart(cartItem);
@@ -125,13 +128,7 @@ class _ProductDetailState extends State<ProductDetail> {
                         ShowMessage.showSuccess(
                             context, 'Đã thêm vào giỏ hàng');
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Có lỗi xảy ra khi thêm vào giỏ hàng'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                        ShowMessage.showError(context, 'Có lỗi xảy ra $e');
                       }
                     },
                     icon: const Icon(Icons.shopping_cart, color: Colors.white),
@@ -143,12 +140,16 @@ class _ProductDetailState extends State<ProductDetail> {
                         horizontal: 20,
                         vertical: 12,
                       ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
+                  height: 50,
                   child: ElevatedButton.icon(
                     onPressed: () {
                       if (product["storeId"] != null) {
@@ -173,6 +174,9 @@ class _ProductDetailState extends State<ProductDetail> {
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
@@ -225,10 +229,10 @@ class _ProductDetailState extends State<ProductDetail> {
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 8,
+            childAspectRatio: 6,
             crossAxisCount: 2,
-            crossAxisSpacing: 20,
-            mainAxisSpacing: 15,
-            childAspectRatio: 3,
             children: [
               ...(product?['book']?['listAuthors'] ?? [])
                   .map((author) => _buildInfoItem(
@@ -247,32 +251,41 @@ class _ProductDetailState extends State<ProductDetail> {
                         statusColor: Colors.green,
                       ))
                   .toList(),
-              _buildInfoItem(
-                  "Nhà xuất bản", product['book']?['publisherName'] ?? ""),
-              _buildInfoItem(
-                  "Nhà phân phối", product['book']?['distributorName'] ?? ""),
-              _buildInfoItem(
-                  "Ngày xuất bản", product['book']?['publicDay'] ?? "chưa có"),
-              _buildInfoItem("Được bán tại", product['storeName'] ?? "chưa có"),
+              if (product['book']?['publisherName'] != null)
+                _buildInfoItem(
+                    "Nhà xuất bản", product['book']?['publisherName'] ?? ""),
+              if (product['book']?['distributorName'] != null)
+                _buildInfoItem(
+                    "Nhà phân phối", product['book']?['distributorName'] ?? ""),
+              if (product['book']?['publicDay'] != null)
+                _buildInfoItem(
+                    "Ngày xuất bản",
+                    DateFormat('yyyy/MM/dd')
+                        .format(DateTime.parse(product['book']?['publicDay']))),
+              if (product['storeName'] != null)
+                _buildInfoItem("Được bán tại", product['storeName'] ?? ""),
               _buildInfoItem(
                 "Tình trạng",
                 product['status'] == 1
-                    ? "còn hàng"
+                    ? "Còn hàng"
                     : product['status'] == 2
-                        ? "hết hàng"
-                        : "không rõ",
+                        ? "Hết hàng"
+                        : "Không rõ",
                 statusColor: product['status'] == 1
                     ? Colors.green
                     : product['status'] == 2
                         ? Colors.red
                         : Colors.grey,
               ),
-              _buildInfoItem("Lần tái bản",
-                  product['book']?['editionNumber']?.toString() ?? "1"),
-              _buildInfoItem("Năm tái bản",
-                  product['book']?['editionYear']?.toString() ?? ""),
-              _buildInfoItem(
-                  "ISBN", product['book']?['isbn']?.toString() ?? ""),
+              if (product['book']?['editionNumber'] != null)
+                _buildInfoItem("Lần tái bản",
+                    product['book']?['editionNumber']?.toString() ?? ""),
+              if (product['book']?['editionYear'] != null)
+                _buildInfoItem("Năm tái bản",
+                    product['book']?['editionYear']?.toString() ?? ""),
+              if (product['book']?['isbn'] != null)
+                _buildInfoItem(
+                    "ISBN", product['book']?['isbn']?.toString() ?? ""),
             ],
           ),
         ],

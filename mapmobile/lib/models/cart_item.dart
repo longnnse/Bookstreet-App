@@ -4,6 +4,7 @@ class CartItem {
   final String imageUrl;
   final double price;
   int quantity;
+  final String? isbn;
 
   CartItem({
     required this.productId,
@@ -11,6 +12,7 @@ class CartItem {
     required this.imageUrl,
     required this.price,
     this.quantity = 1,
+    this.isbn,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class CartItem {
       'imageUrl': imageUrl,
       'price': price,
       'quantity': quantity,
+      'isbn': isbn,
     };
   }
 
@@ -30,6 +33,7 @@ class CartItem {
       imageUrl: json['imageUrl'],
       price: json['price'].toDouble(),
       quantity: json['quantity'],
+      isbn: json['isbn']?.toString(),
     );
   }
 }

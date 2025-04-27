@@ -1,54 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/pages/Event/widget/event_widget.dart';
-import 'package:mapmobile/services/eventservice.dart';
-import 'package:mapmobile/util/util.dart';
-import 'package:provider/provider.dart';
+import 'package:mapmobile/pages/Event/widget/event_card.dart';
+import 'package:mapmobile/pages/event_detail/event_detail_page.dart';
 
-class Eventlist extends StatefulWidget {
-  const Eventlist({super.key, required this.eventList});
+class Eventlist extends StatelessWidget {
   final List<dynamic> eventList;
 
-  @override
-  State<Eventlist> createState() => _EventlistState();
-}
-
-class _EventlistState extends State<Eventlist> {
-  List<dynamic> events = [];
-
-  @override
-  void initState() {
-    super.initState();
-    MapModel model = getStreet(context);
-    getEventByStreetId(model.streetId).then((res) {
-      setState(() {
-        events = res;
-      });
-    });
-  }
+  const Eventlist({super.key, required this.eventList});
 
   @override
   Widget build(BuildContext context) {
-    final itemwidth = MediaQuery.of(context).size.width / 4 - 40;
-    final deviceHeight = MediaQuery.of(context).size.height - 40;
-    return SizedBox(
-      height: deviceHeight - 100,
-      child: SingleChildScrollView(
-        child: Consumer<MapModel>(
-          builder: (context, value, child) {
-            final model = context.read<MapModel>();
-            return Wrap(
-              spacing: 40,
-              runSpacing: 10,
-              children: [
-                ...events.map((event) {
-                  return SizedBox(
-                      width: itemwidth, child: Eventwidget(event: event));
-                })
-              ],
-            );
-          },
-        ),
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final event = eventList[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Hero(
+              tag: 'event_${event['id']}',
+              child: EventCard(
+                event: event,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventDetailPage(event: event),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+        childCount: eventList.length,
       ),
     );
   }

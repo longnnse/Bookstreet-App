@@ -7,7 +7,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image/image.dart' as img;
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/book_store_detail/book_store_detail_page.dart';
-import 'package:mapmobile/services/eventservice.dart';
+import 'package:mapmobile/services/event_service.dart';
 import 'package:mapmobile/services/storeservice.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -99,6 +99,7 @@ class MapWithPositionWidget extends StatefulWidget {
 // Trạng thái của MapWithPositionWidget
 class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   final List<BookStoreOrEventWithPosition> _bookStoresWithPosition = [];
+  final EventService _eventService = EventService();
 
   double originalWidth = 1;
   double originalHeight = 1;
@@ -148,7 +149,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
   Future<Map<String, dynamic>?> _fetchEvent(String eventId) async {
     try {
-      final res = await getEventById(id: eventId);
+      final res = await _eventService.getEventById(id: eventId);
       return res;
     } catch (error) {
       debugPrint("Error fetching event: $error");
