@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/pages/Event/widget/event_list.dart';
 import 'package:mapmobile/services/event_service.dart';
+import 'package:mapmobile/util/util.dart';
 import 'package:shimmer/shimmer.dart';
 
 class EventPage extends StatefulWidget {
@@ -27,7 +28,8 @@ class _EventPageState extends State<EventPage> {
         errorMessage = null;
       });
 
-      final response = await _eventService.getEvent(search: search);
+      final response = await _eventService.getEvent(
+          search: search, streetId: getStreet(context).streetId);
       if (mounted) {
         final now = DateTime.now();
         final filteredEvents = response.where((event) {
@@ -98,7 +100,7 @@ class _EventPageState extends State<EventPage> {
         focusNode: _searchFocusNode,
         onChanged: onTextChange,
         decoration: InputDecoration(
-          hintText: 'aTìm kiếm sự kiện...',
+          hintText: 'Tìm kiếm sự kiện...',
           prefixIcon: Icon(
             Icons.search,
             color: Theme.of(context).colorScheme.primary,

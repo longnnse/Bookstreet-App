@@ -133,7 +133,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   }
 
   Future<void> fetchGiftData() async {
-    await _giftService.getAllGift().then((res) {
+    await _giftService.getAllGift(getStreet().streetId).then((res) {
       setState(() {
         products = res;
         isLoading = false;

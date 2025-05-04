@@ -1,14 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:mapmobile/services/api.dart';
+import 'package:mapmobile/services/network_service.dart';
 
-Future<dynamic> getAuthorById(String? id) async {
-  final dio = Dio();
-  final response = await dio.get('${baseURL}Author/$id');
-  return response.data;
-}
+class AuthorService {
+  final Dio _dio = NetworkService().dio;
 
-Future<dynamic> getAllAuthor() async {
-  final dio = Dio();
-  final response = await dio.get('${baseURL}Author');
-  return response.data;
+  Future<dynamic> getAuthorById(String? id) async {
+    final response = await _dio.get('${baseURL}Author/$id');
+    return response.data['data'];
+  }
+
+  Future<dynamic> getAllAuthor() async {
+    final response = await _dio.get('${baseURL}Author');
+    return response.data['data']['list'];
+  }
 }

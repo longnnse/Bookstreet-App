@@ -15,6 +15,7 @@ class AuthorDetail extends StatefulWidget {
 class _AuthorDetailState extends State<AuthorDetail> {
   Map<String, dynamic>? authorDetail;
   bool isLoading = true;
+  final AuthorService _authorService = AuthorService();
 
   @override
   void initState() {
@@ -28,7 +29,7 @@ class _AuthorDetailState extends State<AuthorDetail> {
     setState(() {
       isLoading = true;
     });
-    await getAuthorById(widget.authorId).then((res) {
+    await _authorService.getAuthorById(widget.authorId).then((res) {
       setState(() {
         authorDetail = res;
         isLoading = false;

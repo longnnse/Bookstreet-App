@@ -5,14 +5,14 @@ import 'package:mapmobile/services/network_service.dart';
 class EventService {
   final Dio _dio = NetworkService().dio;
 
-  Future<dynamic> getEvent({String? search}) async {
+  Future<dynamic> getEvent({String? search, required int streetId}) async {
     try {
       var filterData = [];
 
       if (search != null && search.trim() != "") {
         filterData = [
           ...filterData,
-          {"field": "title", "value": search, "operand": 6}
+          {"field": "title", "value": search, "operand": 6},
         ];
       }
 
@@ -21,16 +21,6 @@ class EventService {
       return response.data['data']['list'];
     } catch (e) {
       debugPrint('❌ Get event error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> getEventByStreetId(int? streetId) async {
-    try {
-      final response = await _dio.get('Event/Street/$streetId');
-      return response.data;
-    } catch (e) {
-      debugPrint('❌ Get event by street ID error: $e');
       rethrow;
     }
   }

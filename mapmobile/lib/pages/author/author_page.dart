@@ -18,7 +18,7 @@ class _AuthorPageState extends State<AuthorPage> {
   List<dynamic> authors = [];
 
   bool isLoading = true;
-
+  final AuthorService _authorService = AuthorService();
   @override
   void initState() {
     super.initState();
@@ -31,7 +31,7 @@ class _AuthorPageState extends State<AuthorPage> {
     setState(() {
       isLoading = true;
     });
-    await getAllAuthor().then((res) {
+    await _authorService.getAllAuthor().then((res) {
       setState(() {
         authors = res;
         isLoading = false;

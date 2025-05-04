@@ -7,6 +7,7 @@ import 'package:mapmobile/common/widgets/show_message.dart';
 import 'package:mapmobile/pages/author/author_detail.dart';
 import 'package:mapmobile/pages/store_products_filter/store_products_filter_page.dart';
 import 'package:mapmobile/services/gift_service.dart';
+import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:mapmobile/services/product_service.dart';
 import 'package:mapmobile/shared/networkimagefallback.dart';
 import 'package:mapmobile/util/util.dart';
@@ -118,7 +119,8 @@ class _ProductDetailState extends State<ProductDetail> {
             ),
             Column(
               children: [
-                if (widget.productType != ProductType.gift) ...[
+                if (widget.productType != ProductType.gift &&
+                    PreferencesManager.getUserData() != null) ...[
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,

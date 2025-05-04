@@ -4,9 +4,12 @@ import 'package:mapmobile/services/network_service.dart';
 class GiftService {
   final _dio = NetworkService().dio;
 
-  Future<dynamic> getAllGift() async {
+  Future<dynamic> getAllGift(int streetId) async {
     final response = await _dio.post('${baseURL}Gift/paginate', data: {
       "limit": -1,
+      "filter": [
+        {"field": "StreetId", "value": "$streetId", "operand": 0}
+      ]
     });
     return response.data['data']['list'];
   }

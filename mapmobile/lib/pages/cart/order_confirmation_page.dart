@@ -37,6 +37,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
         } else {
           setState(() => isLoading = false);
           ShowMessage.showError(context, order['message']);
+          Navigator.pop(context);
         }
       });
     });
