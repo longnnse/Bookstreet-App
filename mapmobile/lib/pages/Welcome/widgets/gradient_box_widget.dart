@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
 import 'package:mapmobile/pages/Membership/membership_info_page.dart';
-import 'package:mapmobile/pages/author/author_page.dart';
 import 'package:mapmobile/pages/auth/login_page.dart';
 import 'package:mapmobile/pages/event/event_page.dart';
 import 'package:mapmobile/pages/store_products_filter/store_products_filter_page.dart';
@@ -46,9 +45,9 @@ List<Map<String, dynamic>> menuItems = [
     'accentColor': const Color(0xFF2E7D32), // Xanh lá cây rực rỡ
   },
   {
-    'icon': Icons.person,
-    'title': 'Tác giả',
-    'route': '/author',
+    'icon': Icons.card_giftcard,
+    'title': 'Quà tặng',
+    'route': '/gift',
     'backgroundColor': const Color(0xFF640D5F), // Dark purple background
     'accentColor': const Color(0xFF640D5F), // Dark purple accent
   },
@@ -93,11 +92,13 @@ class GradientMenu extends StatelessWidget {
                     ),
                   );
                   break;
-                case '/author':
+                case '/gift':
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AuthorPage(),
+                      builder: (context) => const StoreProductsFilterPage(
+                        productType: ProductType.gift,
+                      ),
                     ),
                   );
                   break;

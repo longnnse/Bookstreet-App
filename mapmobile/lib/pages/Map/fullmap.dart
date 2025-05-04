@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapmobile/models/kios_model.dart';
 import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/services/storeservice.dart';
+import 'package:mapmobile/services/store_service.dart';
 import 'package:mapmobile/shared/header.dart';
 import 'package:mapmobile/shared/networkimagefallback.dart';
 import 'package:mapmobile/shared/text.dart';
@@ -16,9 +16,10 @@ class FullMap extends StatefulWidget {
 
 class _FullMapState extends State<FullMap> {
   dynamic selectedStore;
+  final StoreService _storeService = StoreService();
 
   dynamic getStoreOnTap(String storeId) {
-    getStoreById(storeId).then((res) {
+    _storeService.getStoreById(storeId).then((res) {
       setState(() {
         selectedStore = res;
       });

@@ -99,6 +99,6 @@ class ProductService {
 
   Future<dynamic> getProductById(String? id) async {
     final response = await _dio.get('Product/$id');
-    return response.data;
+    return response.data['data'];
   }
 }

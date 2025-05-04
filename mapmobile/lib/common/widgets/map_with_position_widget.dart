@@ -8,7 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/book_store_detail/book_store_detail_page.dart';
 import 'package:mapmobile/services/event_service.dart';
-import 'package:mapmobile/services/storeservice.dart';
+import 'package:mapmobile/services/store_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -100,6 +100,7 @@ class MapWithPositionWidget extends StatefulWidget {
 class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
   final List<BookStoreOrEventWithPosition> _bookStoresWithPosition = [];
   final EventService _eventService = EventService();
+  final StoreService _storeService = StoreService();
 
   double originalWidth = 1;
   double originalHeight = 1;
@@ -139,7 +140,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
   Future<Map<String, dynamic>?> _fetchStore(String storeId) async {
     try {
-      final res = await getStoreById(storeId);
+      final res = await _storeService.getStoreById(storeId);
       return res;
     } catch (error) {
       debugPrint("Error fetching store: $error");
@@ -173,7 +174,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
       final image = context.read<MapModel>().imageUrl;
 
       final tempDir = await getTemporaryDirectory();
-      final filePath = '${tempDir.path}/map_image.png';
+      final filePath = '${tempDir.path}/${image.split('/').last}';
       final file = File(filePath);
 
       // Check if the file already exists in cache
@@ -318,55 +319,30 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
             )
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Stack(
-                        children: [
-                          if (_imageFile != null)
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.file(
-                                  _imageFile!, // Hiển thị hình ảnh
-                                  width: constraints.maxWidth,
-                                  height: _getImageDisplayedHeight(),
-                                  fit: BoxFit.cover,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Stack(
+                          children: [
+                            if (_imageFile != null)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              ),
-                            ),
-                          // Iterate over _kiotLocations to display each location
-                          for (int index = 0;
-                              index < _bookStoresWithPosition.length;
-                              index++)
-                            if (_bookStoresWithPosition[index].position != null)
-                              Positioned(
-                                left: _scaledLeft(
-                                    _bookStoresWithPosition[index].position!),
-                                top: _scaledTop(
-                                    _bookStoresWithPosition[index].position!),
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    navigate(index);
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: CachedNetworkImage(
-                                      imageUrl: _bookStoresWithPosition[index]
-                                          .data['urlImage'],
-                                      width: 54,
-                                      height: 50,
-                                      fit: BoxFit.fill,
-                                    ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.file(
+                                    _imageFile!, // Hiển thị hình ảnh
+                                    width: constraints.maxWidth,
+                                    height: _getImageDisplayedHeight(),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                          if (_bookStoresWithPosition.isNotEmpty)
+                            // Iterate over _kiotLocations to display each location
                             for (int index = 0;
                                 index < _bookStoresWithPosition.length;
                                 index++)
@@ -374,43 +350,72 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                   null)
                                 Positioned(
                                   left: _scaledLeft(
-                                          _bookStoresWithPosition[index]
-                                              .position!) +
-                                      15,
-                                  top: _scaledTop(_bookStoresWithPosition[index]
-                                          .position!) -
-                                      30,
+                                      _bookStoresWithPosition[index].position!),
+                                  top: _scaledTop(
+                                      _bookStoresWithPosition[index].position!),
                                   child: GestureDetector(
                                     onTap: () async {
                                       navigate(index);
                                     },
-                                    child: const Icon(Icons.location_on,
-                                        color: Colors.red),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: CachedNetworkImage(
+                                        imageUrl: _bookStoresWithPosition[index]
+                                            .data['urlImage'],
+                                        width: 54,
+                                        height: 50,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                          Positioned(
-                            left: 70.w,
-                            top: 350.h,
-                            child: const Column(
-                              children: [
-                                Icon(Icons.location_on, color: Colors.green),
-                                Text(
-                                  'You are here',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
+                            if (_bookStoresWithPosition.isNotEmpty)
+                              for (int index = 0;
+                                  index < _bookStoresWithPosition.length;
+                                  index++)
+                                if (_bookStoresWithPosition[index].position !=
+                                    null)
+                                  Positioned(
+                                    left: _scaledLeft(
+                                            _bookStoresWithPosition[index]
+                                                .position!) +
+                                        15,
+                                    top: _scaledTop(
+                                            _bookStoresWithPosition[index]
+                                                .position!) -
+                                        30,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        navigate(index);
+                                      },
+                                      child: const Icon(Icons.location_on,
+                                          color: Colors.red),
+                                    ),
                                   ),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  if (_bookStoresWithPosition.isNotEmpty) _buildNote(),
-                ],
+                            Positioned(
+                              left: 70.w,
+                              top: 350.h,
+                              child: const Column(
+                                children: [
+                                  Icon(Icons.location_on, color: Colors.green),
+                                  Text(
+                                    'You are here',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    if (_bookStoresWithPosition.isNotEmpty) _buildNote(),
+                  ],
+                ),
               ),
             ),
     );

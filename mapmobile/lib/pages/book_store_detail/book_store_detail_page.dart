@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mapmobile/pages/store_products_filter/store_products_filter_page.dart';
-import 'package:mapmobile/services/storeservice.dart';
+import 'package:mapmobile/services/store_service.dart';
 import 'package:mapmobile/shared/btn.dart';
 import 'package:mapmobile/shared/text.dart';
 
@@ -17,9 +17,10 @@ class BookStoreDetailPage extends StatefulWidget {
 
 class _BookStoreDetailPageState extends State<BookStoreDetailPage> {
   Map<String, dynamic> store = {};
+  final StoreService _storeService = StoreService();
 
   Future<Map<String, dynamic>> _getStoreByOnTap(int storeId) async {
-    final res = await getStoreById(storeId.toString());
+    final res = await _storeService.getStoreById(storeId.toString());
     return res;
   }
 

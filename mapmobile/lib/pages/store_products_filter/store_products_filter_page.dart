@@ -7,8 +7,9 @@ import 'package:mapmobile/models/map_model.dart';
 import 'package:mapmobile/pages/product_detail/product_detail.dart';
 import 'package:mapmobile/services/category_service.dart';
 import 'package:mapmobile/services/distributor_service.dart';
+import 'package:mapmobile/services/gift_service.dart';
 import 'package:mapmobile/services/product_service.dart';
-import 'package:mapmobile/services/storeservice.dart';
+import 'package:mapmobile/services/store_service.dart';
 import 'package:mapmobile/util/util.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +17,7 @@ enum ProductType {
   book,
   souvenir,
   all,
+  gift,
 }
 
 extension ProductTypeExtension on ProductType {
@@ -27,6 +29,8 @@ extension ProductTypeExtension on ProductType {
         return 'Quà lưu niệm';
       case ProductType.all:
         return 'Tất cả sản phẩm của cửa hàng';
+      case ProductType.gift:
+        return 'Quà tặng';
     }
   }
 
@@ -38,6 +42,8 @@ extension ProductTypeExtension on ProductType {
         return 2;
       case ProductType.all:
         return null;
+      case ProductType.gift:
+        return 3;
     }
   }
 }
@@ -60,6 +66,9 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   final TextEditingController _searchController = TextEditingController();
   final ProductService _productService = ProductService();
   final CategoryService _categoryService = CategoryService();
+  final GiftService _giftService = GiftService();
+  final DistributorService _distributorService = DistributorService();
+  final StoreService _storeService = StoreService();
 
   List<dynamic> products = [];
   List<dynamic> categoriesFilter = [];
@@ -81,7 +90,11 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
     super.initState();
     selectedStoreId = widget.storeId;
     selectedProductTypeId = widget.productType.id;
-    _loadData();
+    if (widget.productType == ProductType.gift) {
+      fetchGiftData();
+    } else {
+      _loadData();
+    }
   }
 
   @override
@@ -119,6 +132,15 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
     });
   }
 
+  Future<void> fetchGiftData() async {
+    await _giftService.getAllGift().then((res) {
+      setState(() {
+        products = res;
+        isLoading = false;
+      });
+    });
+  }
+
   Future<void> fetchFilterData() async {
     setState(() {
       isLoadingFilters = true;
@@ -140,7 +162,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   }
 
   Future<void> getAllStore() async {
-    await getAllBookStore().then((res) {
+    await _storeService.getAllBookStore().then((res) {
       setState(() {
         bookStoresFilter = res;
       });
@@ -197,7 +219,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   }
 
   Future<void> getAllDistributorFilter() async {
-    await getAllDistributor().then((res) {
+    await _distributorService.getAllDistributor().then((res) {
       setState(() {
         distributorsFilter = res;
       });
@@ -424,8 +446,10 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ProductDetail(pid: product['productId'].toString()),
+            builder: (context) => ProductDetail(
+              pid: (product['productId'] ?? product['id']).toString(),
+              productType: widget.productType,
+            ),
           ),
         );
       },
@@ -440,33 +464,37 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
                 child: CachedNetworkImage(
-                  imageUrl: product['urlImage']!,
+                  imageUrl: product['urlImage'] ?? '',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   placeholder: (context, url) =>
                       const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) =>
-                      Image.asset('assets/images/book_photo.jpg'),
+                  errorWidget: (context, url, error) => widget.productType ==
+                          ProductType.gift
+                      ? Image.asset('assets/images/gift.jpg', fit: BoxFit.cover)
+                      : Image.asset('assets/images/book_photo.jpg',
+                          fit: BoxFit.cover),
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                product['productName'],
+                product['productName'] ?? product['giftName'],
                 style: const TextStyle(fontWeight: FontWeight.bold),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Text(
-                formatToVND(product['price']),
-                style: const TextStyle(color: Colors.green),
+            if (product['price'] != null)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: Text(
+                  formatToVND(product['price']),
+                  style: const TextStyle(color: Colors.green),
+                ),
               ),
-            ),
           ],
         ),
       ),

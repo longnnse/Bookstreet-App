@@ -120,8 +120,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
       final transactions = await _customerService.getTransactionHistory();
 
       setState(() {
-        _transactions =
-            transactions.map((item) => item as Map<String, dynamic>).toList();
+        _transactions = transactions.reversed
+            .map((item) => item as Map<String, dynamic>)
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -149,7 +150,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
           await _pointHistoryService.getPointHistory(customerId.toString());
 
       setState(() {
-        _points = points.map((item) => item as Map<String, dynamic>).toList();
+        _points = points.reversed
+            .map((item) => item as Map<String, dynamic>)
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -164,7 +167,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     try {
       final orders = await _customerService.getOrderHistory();
       setState(() {
-        _orders = orders.map((item) => item as Map<String, dynamic>).toList();
+        _orders = orders.reversed
+            .map((item) => item as Map<String, dynamic>)
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -240,7 +245,6 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
 
   Widget _pointHistoryWidget() {
     return ListView.builder(
-      reverse: true,
       itemCount: _points.length,
       itemBuilder: (context, index) {
         final point = _points[index];
@@ -277,15 +281,21 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
               ),
             ),
             subtitle: Text(
-              note.isNotEmpty
-                  ? note
-                  : giftId != null
-                      ? 'Bạn đã dùng $pointAmount điểm để đổi $quantity ${gift['giftName']} tại cửa hàng quà tặng. Số điểm hiện tại của bạn là $currentPoint.'
-                      : 'Bạn ${pointStatus == PointStatus.earning ? 'được cộng' : 'đã dùng'} $pointAmount điểm cho đơn hàng ${formatToVND(amount)} tại $storeName. Số điểm hiện tại của bạn là $currentPoint.',
+              "$note, ${giftId != null ? 'Bạn đã dùng $pointAmount điểm để đổi $quantity ${gift['giftName']} tại cửa hàng quà tặng. Số điểm hiện tại của bạn là $currentPoint.' : 'Bạn ${pointStatus == PointStatus.earning ? 'được cộng' : 'đã dùng'} $pointAmount điểm cho đơn hàng ${formatToVND(amount)} tại $storeName. Số điểm hiện tại của bạn là $currentPoint.'}",
               style: const TextStyle(
                 fontSize: 16,
               ),
             ),
+            // Text(
+            //   note.isNotEmpty
+            //       ? note
+            //       : giftId != null
+            //           ? 'Bạn đã dùng $pointAmount điểm để đổi $quantity ${gift['giftName']} tại cửa hàng quà tặng. Số điểm hiện tại của bạn là $currentPoint.'
+            //           : 'Bạn ${pointStatus == PointStatus.earning ? 'được cộng' : 'đã dùng'} $pointAmount điểm cho đơn hàng ${formatToVND(amount)} tại $storeName. Số điểm hiện tại của bạn là $currentPoint.',
+            //   style: const TextStyle(
+            //     fontSize: 16,
+            //   ),
+            // ),
             trailing: Text(
               DateFormat('dd/MM/yyyy').format(DateTime.parse(
                   point['createDate'] ?? DateTime.now().toString())),
@@ -303,7 +313,6 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _orders.length,
-      reverse: true,
       itemBuilder: (context, index) {
         final order = _orders[index];
         final orderStatus = _getOrderStatus(order['status'] ?? 1);
@@ -441,7 +450,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
               ),
             ),
             title: Text(
-              transaction['description'],
+              "${transaction['description']}, Số tiền hiện tại trong ví là ${formatToVND(transaction['currentBalance'])}",
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
