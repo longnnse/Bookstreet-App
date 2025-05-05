@@ -8,7 +8,11 @@ class GiftService {
     final response = await _dio.post('${baseURL}Gift/paginate', data: {
       "limit": -1,
       "filter": [
-        {"field": "StreetId", "value": "$streetId", "operand": 0}
+        {
+          "field": "Store.Location.Area.StreetId",
+          "value": "$streetId",
+          "operand": 0
+        }
       ]
     });
     return response.data['data']['list'];
