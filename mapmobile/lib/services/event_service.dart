@@ -7,7 +7,13 @@ class EventService {
 
   Future<dynamic> getEvent({String? search, required int streetId}) async {
     try {
-      var filterData = [];
+      var filterData = [
+        {
+          "field": "Location.Area.StreetId",
+          "value": streetId.toString(),
+          "operand": 0
+        },
+      ];
 
       if (search != null && search.trim() != "") {
         filterData = [
