@@ -135,7 +135,17 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
   Future<void> fetchGiftData() async {
     await _giftService.getAllGift(getStreet().streetId).then((res) {
       setState(() {
-        products = res;
+        final now = DateTime.now();
+        final filteredData = res.where((data) {
+          try {
+            final startDate = DateTime.parse(data['starDate']);
+            final endDate = DateTime.parse(data['endDate']);
+            return now.isAfter(startDate) && now.isBefore(endDate);
+          } catch (e) {
+            return false;
+          }
+        }).toList();
+        products = filteredData;
         isLoading = false;
       });
     });
