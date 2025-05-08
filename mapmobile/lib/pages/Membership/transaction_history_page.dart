@@ -404,9 +404,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
         );
       case 2:
         return OrderStatus(
-          text: 'Đang xử lý',
-          color: Colors.blue,
-          icon: Icons.shopping_cart,
+          text: 'Đã huỷ',
+          color: Colors.red,
+          icon: Icons.cancel,
         );
       case 3:
       case 4:
