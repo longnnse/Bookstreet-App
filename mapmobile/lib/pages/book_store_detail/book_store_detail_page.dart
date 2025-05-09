@@ -57,14 +57,17 @@ class _BookStoreDetailPageState extends State<BookStoreDetailPage> {
                             children: [
                               SizedBox(
                                 width: 200,
+                                height: 200,
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(100),
                                   child: CachedNetworkImage(
-                                      imageUrl: store['urlImage'] ?? "",
-                                      placeholder: (context, url) =>
-                                          const Icon(Icons.error),
-                                      errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error)),
+                                    imageUrl: store['urlImage'] ?? "",
+                                    placeholder: (context, url) =>
+                                        const Icon(Icons.error),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(Icons.error),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               Padding(

@@ -8,6 +8,9 @@ class PointHistoryService {
     final response = await _dio.post('PointHistory/paginate', data: {
       'page': 0,
       'limit': 0,
+      "orders": [
+        {"field": "createDate", "dir": "desc"}
+      ]
     });
     return response.data['data']['list'];
   }

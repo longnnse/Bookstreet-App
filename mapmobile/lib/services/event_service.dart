@@ -34,7 +34,7 @@ class EventService {
   Future<dynamic> getEventById({String? id}) async {
     try {
       final response = await _dio.get('Event/$id');
-      return response.data;
+      return response.data['data'];
     } catch (e) {
       debugPrint('❌ Get event by ID error: $e');
       rethrow;

@@ -342,12 +342,13 @@ class _ProductDetailState extends State<ProductDetail> {
           onTap: onPressed,
           child: Text(
             value,
+            maxLines: 1,
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: statusColor ?? Colors.black,
-              decoration: onPressed != null ? TextDecoration.underline : null,
-            ),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: statusColor ?? Colors.black,
+                decoration: onPressed != null ? TextDecoration.underline : null,
+                overflow: TextOverflow.ellipsis),
           ),
         ),
       ],

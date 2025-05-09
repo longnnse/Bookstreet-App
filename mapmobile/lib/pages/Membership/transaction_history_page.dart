@@ -150,9 +150,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
           await _pointHistoryService.getPointHistory(customerId.toString());
 
       setState(() {
-        _points = points.reversed
-            .map((item) => item as Map<String, dynamic>)
-            .toList();
+        _points = points.map((item) => item as Map<String, dynamic>).toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -463,7 +461,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
               ),
             ),
             trailing: Text(
-              '${transactionType == TransactionType.deposit ? '+' : '-'}${formatToVND(transaction['amount'])}',
+              '${transactionType == TransactionType.deposit ? '+' : ''}${formatToVND(transaction['amount'])}',
               style: TextStyle(
                 color: transactionType.color,
                 fontWeight: FontWeight.bold,

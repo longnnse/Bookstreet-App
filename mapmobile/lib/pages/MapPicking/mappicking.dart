@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapmobile/models/map_model.dart';
-import 'package:mapmobile/services/streetservice.dart';
+import 'package:mapmobile/services/street_service.dart';
 import 'package:mapmobile/shared/networkimagefallback.dart';
 import 'package:mapmobile/shared/text.dart';
 import 'package:provider/provider.dart';
@@ -15,12 +15,13 @@ class MapPicking extends StatefulWidget {
 
 class _MapPickingState extends State<MapPicking> {
   List<dynamic> street = [];
+  final Streetservice _service = Streetservice();
 
   @override
   void initState() {
     super.initState();
 
-    getAllStreet().then((res) {
+    _service.getAllStreet().then((res) {
       setState(() {
         street = res;
       });

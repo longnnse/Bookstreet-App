@@ -480,7 +480,8 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
                   placeholder: (context, url) =>
                       const Center(child: CircularProgressIndicator()),
                   errorWidget: (context, url, error) => widget.productType ==
-                          ProductType.gift
+                              ProductType.gift ||
+                          widget.productType == ProductType.souvenir
                       ? Image.asset('assets/images/gift.jpg', fit: BoxFit.cover)
                       : Image.asset('assets/images/book_photo.jpg',
                           fit: BoxFit.cover),
