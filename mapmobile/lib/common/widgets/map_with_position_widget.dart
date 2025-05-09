@@ -232,7 +232,8 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
 
       // Create a set of location names for faster lookups
       final locationNames = locationsToCheck
-          .map<String>((location) => location['locationName'] as String)
+          .map<String>((location) =>
+              (location['locationName'] as String).toUpperCase().trim())
           .toSet();
 
       // Add all locations to _bookStoresWithPosition if showing all
@@ -241,7 +242,8 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
           locationsToCheck.map<BookStoreOrEventWithPosition>(
             (location) => BookStoreOrEventWithPosition(
               data: {
-                'locationName': location['locationName'],
+                'locationName':
+                    (location['locationName'] as String).toUpperCase().trim(),
                 'storeName': location['storeName'],
                 'urlImage': location['storeImage'],
                 'storeId': location['storeId'],
@@ -255,7 +257,7 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
       // Create a lookup map for faster access to stores by location name
       final Map<String, BookStoreOrEventWithPosition> storesByLocation = {
         for (var store in _bookStoresWithPosition)
-          store.data['locationName']: store
+          (store.data['locationName'] as String).toUpperCase().trim(): store
       };
 
       // Process text blocks to find matching locations
