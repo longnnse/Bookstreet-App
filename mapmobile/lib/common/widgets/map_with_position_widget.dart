@@ -347,7 +347,10 @@ class MapWithPositionWidgetState extends State<MapWithPositionWidget> {
                                 index < _bookStoresWithPosition.length;
                                 index++)
                               if (_bookStoresWithPosition[index].position !=
-                                  null)
+                                      null &&
+                                  _bookStoresWithPosition[index]
+                                          .data['urlImage'] !=
+                                      null)
                                 Positioned(
                                   left: _scaledLeft(
                                       _bookStoresWithPosition[index].position!),
