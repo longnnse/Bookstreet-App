@@ -121,7 +121,7 @@ class _MembershipInfoPageState extends State<MembershipInfoPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${formatToVND(_walletBalance['balance'])} VND',
+              '${formatToVND(_walletBalance['balance'] ?? 0)} VND',
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

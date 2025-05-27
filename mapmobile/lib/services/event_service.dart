@@ -40,4 +40,38 @@ class EventService {
       rethrow;
     }
   }
+
+  Future<dynamic> registerEvent({
+    required String eventId,
+    required String participantName,
+    required String email,
+    required String phone,
+  }) async {
+    try {
+      final response = await _dio.post('Event/Register', data: {
+        "eventId": eventId,
+        "participantName": participantName,
+        "email": email,
+        "phone": phone,
+      });
+      return response.data;
+    } catch (e) {
+      debugPrint('❌ Register event error: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> registerEventByUser({
+    required String eventId,
+  }) async {
+    try {
+      final response = await _dio.post('Event/RegisterByUser', data: {
+        "eventId": eventId,
+      });
+      return response.data;
+    } catch (e) {
+      debugPrint('❌ Register event error: $e');
+      rethrow;
+    }
+  }
 }

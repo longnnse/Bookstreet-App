@@ -2,6 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mapmobile/common/widgets/map_with_position_widget.dart';
+import 'package:mapmobile/common/widgets/show_message.dart';
+import 'package:mapmobile/services/event_service.dart';
+import 'package:mapmobile/services/preferences_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailPage extends StatefulWidget {
@@ -20,6 +23,8 @@ class _EventDetailPageState extends State<EventDetailPage>
   late Animation<Offset> _slideAnimation;
   final ScrollController _scrollController = ScrollController();
   bool _showAppBarTitle = false;
+  final EventService _eventService = EventService();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -80,6 +85,118 @@ class _EventDetailPageState extends State<EventDetailPage>
         );
       }
     }
+  }
+
+  Future<void> _showRegistrationDialog() async {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController phoneController = TextEditingController();
+    bool isLoading = false;
+
+    return showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Đăng ký tham gia'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Họ và tên',
+                    hintText: 'Nhập họ và tên của bạn',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Nhập email của bạn',
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: phoneController,
+                  decoration: const InputDecoration(
+                    labelText: 'Số điện thoại',
+                    hintText: 'Nhập số điện thoại của bạn',
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (nameController.text.isEmpty ||
+                          emailController.text.isEmpty ||
+                          phoneController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Vui lòng điền đầy đủ thông tin'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      setState(() => isLoading = true);
+                      try {
+                        final response = await _eventService.registerEvent(
+                          eventId: widget.event['id'].toString(),
+                          participantName: nameController.text,
+                          email: emailController.text,
+                          phone: phoneController.text,
+                        );
+                        if (mounted) {
+                          if (response['success'] == true) {
+                            Navigator.pop(context);
+                            ShowMessage.showSuccess(
+                                context,
+                                response['message'] ??
+                                    response['data'] +
+                                        ". Vui lòng check mail!");
+                          } else {
+                            ShowMessage.showError(
+                                context, response['message'].toString());
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ShowMessage.showError(context, e.toString());
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() => isLoading = false);
+                        }
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Đăng ký'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildHeader() {
@@ -239,6 +356,14 @@ class _EventDetailPageState extends State<EventDetailPage>
               content: widget.event['purpose'],
             ),
           ],
+          if (widget.event['totalParticipants'] != null) ...[
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              icon: Icons.man,
+              title: 'Số người tham gia sự kiện',
+              content: widget.event['totalParticipants'].toString(),
+            ),
+          ],
         ],
       ),
     );
@@ -323,28 +448,90 @@ class _EventDetailPageState extends State<EventDetailPage>
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: FilledButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MapWithPositionWidget(
-                    mapType: MapType.event,
-                    eventId: widget.event['id'].toString(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ElevatedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            if (PreferencesManager.getUserData() != null) {
+                              final dynamic response =
+                                  await _eventService.registerEventByUser(
+                                eventId: widget.event['id'].toString(),
+                              );
+
+                              if (mounted) {
+                                if (response['success'] == true) {
+                                  ShowMessage.showSuccess(
+                                      context,
+                                      response['message'] ??
+                                          response['data'] +
+                                              ". Vui lòng check mail!");
+                                } else {
+                                  ShowMessage.showError(
+                                      context, response['message'].toString());
+                                }
+                              }
+                            } else {
+                              await _showRegistrationDialog();
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: const Size(double.infinity, 0),
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Đăng ký tham gia'),
                 ),
-              );
-            },
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Xem vị trí sự kiện'),
-          ),
-        ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapWithPositionWidget(
+                          mapType: MapType.event,
+                          eventId: widget.event['id'].toString(),
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: const Size(double.infinity, 0),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Xem vị trí sự kiện'),
+                ),
+              ],
+            )),
       ),
     );
   }

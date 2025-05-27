@@ -9,25 +9,28 @@ class Eventlist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverList(
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final event = eventList[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Hero(
-              tag: 'event_${event['id']}',
-              child: EventCard(
-                event: event,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EventDetailPage(event: event),
-                    ),
-                  );
-                },
-              ),
+          return Hero(
+            tag: 'event_${event['id']}',
+            child: EventCard(
+              event: event,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EventDetailPage(event: event),
+                  ),
+                );
+              },
             ),
           );
         },
