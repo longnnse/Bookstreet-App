@@ -82,30 +82,27 @@ class _EventCardState extends State<EventCard>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.event['urlImage'] != null &&
-                      widget.event['urlImage'].toString().isNotEmpty)
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(16)),
-                      child: CachedNetworkImage(
-                        imageUrl: widget.event['urlImage'],
+                  ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.event['urlImage'],
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, error, stackTrace) => Container(
                         height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, error, stackTrace) => Container(
-                          height: 200,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 48,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 48,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -160,7 +157,7 @@ class _EventCardState extends State<EventCard>
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '${widget.event['storeName']} - ${widget.event['locationName']}',
+                                '${widget.event['storeName'] ?? ''}${widget.event['storeName'] != null && widget.event['locationName'] != null ? ' - ' : ''}${widget.event['locationName'] ?? ''}',
                                 style: Theme.of(context).textTheme.bodyMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -219,6 +216,8 @@ class _EventCardState extends State<EventCard>
                                         .colorScheme
                                         .onPrimaryContainer,
                                   ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                       ],
