@@ -18,6 +18,7 @@ class _EventPageState extends State<EventPage> {
   String? errorMessage;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  String _selectedFilter = 'tất cả';
 
   final EventService _eventService = EventService();
 
@@ -36,7 +37,18 @@ class _EventPageState extends State<EventPage> {
           try {
             final startDate = DateTime.parse(event['starDate']);
             final endDate = DateTime.parse(event['endDate']);
-            return now.isAfter(startDate) && now.isBefore(endDate);
+
+            // Apply filter based on selected option
+            switch (_selectedFilter) {
+              case 'sắp diễn ra':
+                return now.isBefore(startDate); // Only future events
+              case 'đang diễn ra':
+                return now.isAfter(startDate) &&
+                    now.isBefore(endDate); // Only current events
+              case 'tất cả':
+              default:
+                return now.isBefore(endDate); // All non-outdated events
+            }
           } catch (e) {
             return false; // Skip events with invalid dates
           }
@@ -197,6 +209,47 @@ class _EventPageState extends State<EventPage> {
     );
   }
 
+  Widget _buildFilterDropdown() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+        ),
+      ),
+      child: DropdownButton<String>(
+        value: _selectedFilter,
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: const [
+          DropdownMenuItem(
+            value: 'tất cả',
+            child: Text('Tất cả'),
+          ),
+          DropdownMenuItem(
+            value: 'sắp diễn ra',
+            child: Text('Sắp diễn ra'),
+          ),
+          DropdownMenuItem(
+            value: 'đang diễn ra',
+            child: Text('Đang diễn ra'),
+          ),
+        ],
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            setState(() {
+              _selectedFilter = newValue;
+            });
+            _fetchEvents(search: _searchController.text);
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,7 +264,12 @@ class _EventPageState extends State<EventPage> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: _buildSearchBar(),
+                  child: Column(
+                    children: [
+                      _buildSearchBar(),
+                      _buildFilterDropdown(),
+                    ],
+                  ),
                 ),
               ),
               if (isLoading)
