@@ -452,60 +452,62 @@ class _EventDetailPageState extends State<EventDetailPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () async {
-                          setState(() => _isLoading = true);
-                          try {
-                            if (PreferencesManager.getUserData() != null) {
-                              final dynamic response =
-                                  await _eventService.registerEventByUser(
-                                eventId: widget.event['id'].toString(),
-                              );
+                if (widget.event['eventType'] != 4)
+                  ElevatedButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              if (PreferencesManager.getUserData() != null) {
+                                final dynamic response =
+                                    await _eventService.registerEventByUser(
+                                  eventId: widget.event['id'].toString(),
+                                );
 
-                              if (mounted) {
-                                if (response['success'] == true) {
-                                  ShowMessage.showSuccess(
-                                      context,
-                                      response['message'] ??
-                                          response['data'] +
-                                              ". Vui lòng check mail!");
-                                } else {
-                                  ShowMessage.showError(
-                                      context, response['message'].toString());
+                                if (mounted) {
+                                  if (response['success'] == true) {
+                                    ShowMessage.showSuccess(
+                                        context,
+                                        response['message'] ??
+                                            response['data'] +
+                                                ". Vui lòng check mail!");
+                                  } else {
+                                    ShowMessage.showError(context,
+                                        response['message'].toString());
+                                  }
                                 }
+                              } else {
+                                await _showRegistrationDialog();
                               }
-                            } else {
-                              await _showRegistrationDialog();
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                              }
                             }
-                          } finally {
-                            if (mounted) {
-                              setState(() => _isLoading = false);
-                            }
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    minimumSize: const Size(double.infinity, 0),
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                          },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size(double.infinity, 0),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      foregroundColor:
+                          Theme.of(context).colorScheme.onSecondary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text('Đăng ký tham gia'),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text('Đăng ký tham gia'),
-                ),
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
