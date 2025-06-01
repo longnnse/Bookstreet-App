@@ -138,7 +138,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
         final now = DateTime.now();
         final filteredData = res.where((data) {
           try {
-            if (data['starDate'] == null || data['endDate'] == null) {
+            if (data['startDate'] == null || data['endDate'] == null) {
               return true;
             }
             final startDate = DateTime.parse(data['starDate']);
