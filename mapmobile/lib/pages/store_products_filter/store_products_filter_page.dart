@@ -141,7 +141,7 @@ class _StoreProductsFilterPageState extends State<StoreProductsFilterPage> {
             if (data['startDate'] == null || data['endDate'] == null) {
               return true;
             }
-            final startDate = DateTime.parse(data['starDate']);
+            final startDate = DateTime.parse(data['startDate']);
             final endDate = DateTime.parse(data['endDate']);
             return now.isAfter(startDate) && now.isBefore(endDate);
           } catch (e) {
